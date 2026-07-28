@@ -7,7 +7,7 @@
   let records = [];
   let currentServices = [];
   let currentDevice = null;
-  let brandCounterTimer = null;
+  let categoryCounterTimer = null;
   const mapEmbedUrl =
     "https://yandex.ru/map-widget/v1/?ll=137.026408%2C50.568069&mode=search&oid=27521144258&ol=biz&z=12";
 
@@ -283,7 +283,7 @@
                   </div>
                 </div>
               </div>
-              ${renderBrandCounter(activeRecord)}
+              ${renderCategoryCounter(activeRecord, options.onsite)}
             </div>
           </div>
         </section>
@@ -310,7 +310,7 @@
     bindModelScroller();
     bindHorizontalScroll();
     syncBookingBar();
-    startBrandCounter(activeRecord);
+    startCategoryCounter(activeRecord, options.onsite);
   }
 
   function renderTopTabs(activeSlug, onsite) {
@@ -425,26 +425,27 @@
     `;
   }
 
-  function renderBrandCounter(activeRecord) {
+  function renderCategoryCounter(activeRecord, onsite) {
+    const counter = getCategoryCounter(activeRecord, onsite);
     return `
       <div class="brand-counter" data-brand-counter>
-        <span class="brand-counter__label">Отремонтировано устройств</span>
-        <strong data-brand-counter-value>${formatNumber(getBrandCounterStart(activeRecord))}</strong>
-        <span class="brand-counter__brand">${escapeHTML(activeRecord.brand)}</span>
+        <span class="brand-counter__label">Отремонтировано</span>
+        <strong data-brand-counter-value>${formatNumber(counter.value)}</strong>
+        <span class="brand-counter__brand">${escapeHTML(counter.label)}</span>
       </div>
     `;
   }
 
-  function startBrandCounter(activeRecord) {
-    if (brandCounterTimer) {
-      clearInterval(brandCounterTimer);
-      brandCounterTimer = null;
+  function startCategoryCounter(activeRecord, onsite) {
+    if (categoryCounterTimer) {
+      clearInterval(categoryCounterTimer);
+      categoryCounterTimer = null;
     }
     const valueEl = document.querySelector("[data-brand-counter-value]");
     if (!valueEl) return;
-    let value = getBrandCounterStart(activeRecord);
+    let value = getCategoryCounter(activeRecord, onsite).value;
     valueEl.textContent = formatNumber(value);
-    brandCounterTimer = setInterval(() => {
+    categoryCounterTimer = setInterval(() => {
       value += randomInt(1, 4);
       valueEl.textContent = formatNumber(value);
       valueEl.classList.remove("bump");
@@ -453,13 +454,18 @@
     }, 2000);
   }
 
-  function getBrandCounterStart(activeRecord) {
-    const seed = hashString(`${activeRecord.categorySlug}-${activeRecord.brandSlug}`);
-    return 520 + (seed % 3200);
-  }
-
-  function hashString(value) {
-    return String(value).split("").reduce((acc, char) => (acc * 31 + char.charCodeAt(0)) >>> 0, 7);
+  function getCategoryCounter(activeRecord, onsite) {
+    if (onsite) return { value: 29817, label: "устройств с выездом" };
+    return (
+      {
+        telefony: { value: 214850, label: "телефонов" },
+        noutbuki: { value: 118420, label: "ноутбуков" },
+        kompyutery: { value: 85429, label: "компьютеров" },
+        pristavki: { value: 31740, label: "приставок" },
+        videokarty: { value: 16621, label: "видеокарт" },
+        gejmpady: { value: 11934, label: "геймпадов" },
+      }[activeRecord.categorySlug] || { value: 523847, label: "устройств" }
+    );
   }
 
   function renderContactSection() {
@@ -621,27 +627,42 @@
     document.querySelectorAll("[data-horizontal-scroll]").forEach((row) => {
       let startX = 0;
       let startScroll = 0;
-      let moved = false;
+      let pointerId = null;
+      let dragging = false;
+      let suppressClick = false;
 
       row.addEventListener("pointerdown", (event) => {
         if (event.pointerType === "mouse" && event.button !== 0) return;
+        pointerId = event.pointerId;
         startX = event.clientX;
         startScroll = row.scrollLeft;
-        moved = false;
-        row.classList.add("is-dragging");
-        row.setPointerCapture?.(event.pointerId);
+        dragging = false;
+        suppressClick = false;
       });
 
       row.addEventListener("pointermove", (event) => {
-        if (!row.classList.contains("is-dragging")) return;
+        if (pointerId !== event.pointerId) return;
         const distance = event.clientX - startX;
-        if (Math.abs(distance) > 5) moved = true;
+        if (!dragging && Math.abs(distance) > 6) {
+          dragging = true;
+          row.classList.add("is-dragging");
+          row.setPointerCapture?.(event.pointerId);
+        }
+        if (!dragging) return;
+        event.preventDefault();
         row.scrollLeft = startScroll - distance;
       });
 
       const stop = (event) => {
+        if (pointerId !== event.pointerId) return;
+        suppressClick = dragging;
         row.classList.remove("is-dragging");
         if (row.hasPointerCapture?.(event.pointerId)) row.releasePointerCapture(event.pointerId);
+        pointerId = null;
+        dragging = false;
+        setTimeout(() => {
+          suppressClick = false;
+        }, 0);
       };
 
       row.addEventListener("pointerup", stop);
@@ -649,10 +670,10 @@
       row.addEventListener(
         "click",
         (event) => {
-          if (!moved) return;
+          if (!suppressClick) return;
           event.preventDefault();
           event.stopPropagation();
-          moved = false;
+          suppressClick = false;
         },
         true
       );

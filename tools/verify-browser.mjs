@@ -41,6 +41,28 @@ try {
     "concise header repair counter",
     "document.querySelector('.site-header [data-header-counter]') !== null && document.querySelector('.header-repair-counter')?.textContent.includes('Отремонтировано')"
   );
+  await expect(
+    cdp,
+    "header devices below large number",
+    "Number.parseFloat(getComputedStyle(document.querySelector('.header-repair-counter strong')).fontSize) >= 30 && document.querySelector('.header-repair-counter small').getBoundingClientRect().top >= document.querySelector('.header-repair-counter strong').getBoundingClientRect().bottom - 1"
+  );
+  await expect(
+    cdp,
+    "category repair counter",
+    "document.querySelector('.brand-counter')?.textContent.includes('телефонов') && !document.querySelector('.brand-counter')?.textContent.includes('Apple')"
+  );
+  await clickCenter(cdp, '.brand-chip-row .chip[href*="/samsung/"]');
+  await delay(900);
+  await expect(cdp, "brand selection navigates", "location.pathname.includes('/remont/telefony/samsung/')");
+  await navigate(cdp, `${baseUrl}/remont/telefony/apple/iphone-15/`);
+  await clickCenter(cdp, '.model-chip-row .chip[href*="/iphone-14-pro/"]');
+  await delay(900);
+  await expect(cdp, "model selection navigates", "location.pathname.includes('/remont/telefony/apple/iphone-14-pro/')");
+  await navigate(cdp, `${baseUrl}/remont/telefony/apple/iphone-15/`);
+  await clickCenter(cdp, ".catalog-tabs .tab--noutbuki");
+  await delay(900);
+  await expect(cdp, "category selection navigates", "location.pathname.includes('/remont/noutbuki/')");
+  await navigate(cdp, `${baseUrl}/remont/telefony/apple/iphone-15/`);
   await expect(cdp, "desktop price rows", "document.querySelectorAll('.price-row').length >= 10");
   await expect(cdp, "average price with part column", "document.querySelector('.price-list__head')?.textContent.includes('Средняя цена с деталью')");
   await expect(cdp, "average price populated", "document.querySelector('.price-row__price')?.textContent.includes('После диагностики') && [...document.querySelectorAll('.price-row__price')].some((item) => item.textContent.includes('₽'))");
@@ -139,6 +161,17 @@ try {
   await expect(cdp, "light hero image remains visible", "getComputedStyle(document.querySelector('.light-hero__media img')).display !== 'none'");
 
   await setViewport(cdp, 1280, 900, false);
+  await navigate(cdp, `${baseUrl}/`);
+  await expect(
+    cdp,
+    "category images fill cards",
+    "[...document.querySelectorAll('.cat-card')].every((card) => { const image = card.querySelector('.cat-card__image'); const a = card.getBoundingClientRect(); const b = image.getBoundingClientRect(); return b.width >= a.width - 2 && b.height >= a.height - 2 && getComputedStyle(image).objectFit === 'cover'; })"
+  );
+  await expect(
+    cdp,
+    "review logos fill cards",
+    "getComputedStyle(document.querySelector('.platform-rating--yandex'), '::before').content.includes('Яндекс') && getComputedStyle(document.querySelector('.platform-rating--twogis'), '::before').content.includes('2ГИС')"
+  );
   await navigate(cdp, `${baseUrl}/b2b/`);
   await expect(cdp, "b2b page rendered", "document.body.classList.contains('b2b-page') && document.querySelectorAll('.b2b-services article').length === 4");
   await expect(cdp, "b2b form", "document.querySelector('.b2b-form')?.action.includes('shineteatr@gmail.com')");
@@ -238,6 +271,34 @@ async function navigate(cdp, url) {
 async function expect(cdp, label, expression) {
   const result = await cdp.eval(`Boolean(${expression})`);
   if (!result.result.value) failures.push(label);
+}
+
+async function clickCenter(cdp, selector) {
+  const result = await cdp.eval(`(() => {
+    const element = document.querySelector(${JSON.stringify(selector)});
+    if (!element) return null;
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  })()`);
+  const point = result.result.value;
+  if (!point) {
+    failures.push(`click target missing: ${selector}`);
+    return;
+  }
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mousePressed",
+    x: point.x,
+    y: point.y,
+    button: "left",
+    clickCount: 1,
+  });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased",
+    x: point.x,
+    y: point.y,
+    button: "left",
+    clickCount: 1,
+  });
 }
 
 function delay(ms) {

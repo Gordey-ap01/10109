@@ -42,6 +42,32 @@
   color: #fff;
 }
 
+.header-repair-counter {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  align-items: center;
+  row-gap: 1px;
+  min-width: 184px;
+}
+
+.header-repair-counter > span,
+.header-repair-counter strong,
+.header-repair-counter small {
+  grid-column: 1;
+  justify-self: center;
+}
+
+.header-repair-counter strong {
+  font-size: 30px;
+  line-height: 0.94;
+}
+
+.header-repair-counter small {
+  margin-top: 2px;
+  font-size: 10px;
+  line-height: 1;
+}
+
 .site-header .btn-primary,
 .home-page--light .site-header .btn-primary {
   border: 1px solid rgba(255, 255, 255, 0.94);
@@ -187,6 +213,20 @@
   background: #f7fcff;
 }
 
+.cat-card::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0.96) 12%, rgba(255, 255, 255, 0.82) 52%, rgba(255, 255, 255, 0.54) 100%);
+  pointer-events: none;
+  transition: background 0.35s ease;
+}
+
+.cat-card:hover::before {
+  background: linear-gradient(105deg, rgba(247, 252, 255, 0.92) 4%, rgba(247, 252, 255, 0.58) 50%, rgba(247, 252, 255, 0.12) 100%);
+}
+
 .cat-card::after {
   content: "";
   position: absolute;
@@ -207,26 +247,27 @@
 
 .cat-card__image {
   position: absolute;
-  z-index: -1;
-  right: -10%;
-  bottom: -9%;
-  width: 64%;
-  height: 72%;
-  object-fit: contain;
-  object-position: right bottom;
-  opacity: 0.025;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.07;
   filter: saturate(0.8);
-  transform: translate3d(16px, 10px, 0) scale(0.94);
+  transform: scale(1.02);
   transition: opacity 0.35s ease, transform 0.45s ease, filter 0.35s ease;
 }
 
 .cat-card:hover .cat-card__image {
-  opacity: 0.17;
+  opacity: 0.88;
   filter: saturate(1.15);
-  transform: translate3d(0, 0, 0) scale(1);
+  transform: scale(1.09);
 }
 
 .cat-icon {
+  position: relative;
+  z-index: 2;
   width: 72px;
   height: 72px;
 }
@@ -238,7 +279,7 @@
 
 .cat-card__content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: block;
   margin-top: 26px;
   max-width: 80%;
@@ -272,37 +313,52 @@
 
 .platform-rating::before {
   position: absolute;
-  z-index: -1;
-  right: -8px;
-  bottom: -54px;
+  z-index: 0;
+  inset: 0;
+  display: grid;
+  place-items: center;
   opacity: 0;
-  font-size: 190px;
+  font-size: clamp(72px, 9vw, 132px);
   font-weight: 800;
   line-height: 1;
-  transform: rotate(-8deg) scale(0.9);
+  letter-spacing: -0.08em;
+  transform: scale(0.86);
   transition: opacity 0.25s ease, transform 0.35s ease;
+  pointer-events: none;
 }
 
 .platform-rating--yandex::before {
-  content: "Я";
-  color: rgba(239, 68, 68, 0.14);
+  content: "Яндекс";
+  color: rgba(239, 68, 68, 0.12);
 }
 
 .platform-rating--twogis::before {
-  content: "2";
-  color: rgba(34, 197, 94, 0.14);
+  content: "2ГИС";
+  color: rgba(34, 197, 94, 0.13);
 }
 
 .platform-rating:hover {
   border-color: transparent;
-  background: #f8fafc;
   box-shadow: 0 18px 42px rgba(15, 23, 42, 0.09);
   transform: translateY(-3px);
 }
 
+.platform-rating--yandex:hover {
+  background: linear-gradient(135deg, #fff 0%, #fff7f7 100%);
+}
+
+.platform-rating--twogis:hover {
+  background: linear-gradient(135deg, #fff 0%, #f4fff7 100%);
+}
+
 .platform-rating:hover::before {
   opacity: 1;
-  transform: rotate(-4deg) scale(1);
+  transform: scale(1);
+}
+
+.platform-rating > * {
+  position: relative;
+  z-index: 1;
 }
 
 .platform-logo {
@@ -471,7 +527,7 @@
   width: auto;
   min-width: 0;
   border: 0;
-  border-radius: 8px;
+  border-radius: 20px;
   padding: 28px 20px;
   background: linear-gradient(145deg, #0369a1, #0ea5e9);
   color: #fff;
@@ -782,6 +838,7 @@
   }
 
   .header-repair-counter {
+    grid-template-columns: 1fr;
     min-width: 0;
   }
 
@@ -790,10 +847,11 @@
   }
 
   .header-repair-counter strong {
-    font-size: 17px;
+    font-size: 21px;
   }
 
   .header-repair-counter small {
+    margin-top: 1px;
     font-size: 8px;
   }
 
@@ -891,7 +949,7 @@
   }
 
   .cat-card__image {
-    width: 52%;
+    width: 100%;
     opacity: 0.08;
   }
 
