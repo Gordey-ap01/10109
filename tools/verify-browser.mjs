@@ -57,9 +57,9 @@ try {
   await expect(cdp, "brand selection navigates", "location.pathname.includes('/remont/telefony/samsung/')");
   await navigate(cdp, `${baseUrl}/remont/telefony/apple/iphone-15/`);
   await waitFor(cdp, "document.querySelector('.model-chip-row')");
-  await clickCenter(cdp, '.model-chip-row .chip[href*="/iphone-14-pro/"]');
-  await waitFor(cdp, "location.pathname.includes('/remont/telefony/apple/iphone-14-pro/')");
-  await expect(cdp, "model selection navigates", "location.pathname.includes('/remont/telefony/apple/iphone-14-pro/')");
+  await clickCenter(cdp, '.model-chip-row .chip[href*="/iphone-15-pro/"]');
+  await waitFor(cdp, "location.pathname.includes('/remont/telefony/apple/iphone-15-pro/')");
+  await expect(cdp, "model selection navigates", "location.pathname.includes('/remont/telefony/apple/iphone-15-pro/')");
   await navigate(cdp, `${baseUrl}/remont/telefony/apple/iphone-15/`);
   await waitFor(cdp, "document.querySelector('.catalog-tabs .tab--noutbuki')");
   await clickCenter(cdp, ".catalog-tabs .tab--noutbuki");
@@ -293,6 +293,7 @@ async function clickCenter(cdp, selector) {
   const result = await cdp.eval(`(() => {
     const element = document.querySelector(${JSON.stringify(selector)});
     if (!element) return null;
+    element.scrollIntoView({ block: "center", inline: "center" });
     const rect = element.getBoundingClientRect();
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   })()`);
