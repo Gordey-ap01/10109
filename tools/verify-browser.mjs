@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 const chrome = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const debugPort = 9333;
 const baseUrl = process.argv[2] || "http://127.0.0.1:8082";
-const userDataDir = path.join(os.tmpdir(), `service-10103-chrome-${Date.now()}`);
+const userDataDir = path.join(os.tmpdir(), `service-10107-chrome-${Date.now()}`);
 const failures = [];
 const consoleErrors = [];
 
@@ -42,7 +42,8 @@ try {
     "document.querySelector('.site-header [data-header-counter]') !== null && document.querySelector('.header-repair-counter')?.textContent.includes('Отремонтировано')"
   );
   await expect(cdp, "desktop price rows", "document.querySelectorAll('.price-row').length >= 10");
-  await expect(cdp, "average price column", "document.querySelector('.price-list__head')?.textContent.includes('Средняя цена ремонта')");
+  await expect(cdp, "average price with part column", "document.querySelector('.price-list__head')?.textContent.includes('Средняя цена с деталью')");
+  await expect(cdp, "average price populated", "document.querySelector('.price-row__price')?.textContent.includes('После диагностики') && [...document.querySelectorAll('.price-row__price')].some((item) => item.textContent.includes('₽'))");
   await expect(cdp, "model scroller controls", "document.querySelector('[data-model-scroller].has-overflow') !== null");
   const modelScrollBefore = await cdp.eval("document.querySelector('[data-model-row]')?.scrollLeft || 0");
   await cdp.eval("document.querySelector('.model-scroller__button--next')?.click()");
@@ -51,13 +52,16 @@ try {
   if (modelScrollAfter.result.value <= modelScrollBefore.result.value) failures.push("desktop model scroller moves");
   await expect(cdp, "category tabs have icons", "document.querySelectorAll('.catalog-tabs .tab-icon').length >= 4");
   await expect(cdp, "active category icon present", "document.querySelector('.catalog-tabs .tab.active .tab-icon') !== null");
-  await expect(cdp, "device media tags present", "document.querySelectorAll('.device-media-tags span').length >= 3");
+  await expect(cdp, "device media tags removed", "document.querySelector('.device-media-tags') === null");
+  await expect(cdp, "two device facts", "document.querySelectorAll('.device-facts span').length === 2");
   await expect(cdp, "no repeated page title", "document.querySelector('.page-title') === null");
   await expect(cdp, "no breadcrumbs", "document.querySelector('.breadcrumbs') === null");
   await expect(cdp, "no available works heading", "document.querySelector('.prices-panel__head h2') === null");
   await expect(cdp, "collapsed services button", "document.querySelector('.expand-services')?.textContent.includes('Раскройте')");
   await expect(cdp, "contact block present", "document.querySelector('.contact-section .contact-form') !== null && document.querySelector('.map-frame') !== null");
   await expect(cdp, "brand counter present", "document.querySelector('[data-brand-counter-value]') !== null");
+  await expect(cdp, "brand counter spans selector", "document.querySelector('.selection-shell > .brand-counter') !== null && document.querySelector('.selection-shell__main .catalog-controls') !== null");
+  await expect(cdp, "brand counter blue", "getComputedStyle(document.querySelector('.selection-shell .brand-counter')).backgroundImage !== 'none' && getComputedStyle(document.querySelector('[data-brand-counter-value]')).color === 'rgb(255, 255, 255)'");
   const brandCounterBefore = await cdp.eval("document.querySelector('[data-brand-counter-value]')?.textContent");
   await delay(2300);
   const brandCounterAfter = await cdp.eval("document.querySelector('[data-brand-counter-value]')?.textContent");
@@ -72,7 +76,7 @@ try {
   await delay(250);
   await expect(cdp, "booking bar visible", "document.querySelector('.booking-bar.visible') !== null");
   await expect(cdp, "booking contact label", "document.querySelector('.booking-bar button')?.textContent.trim() === 'Связаться'");
-  await expect(cdp, "booking contact enlarged", "document.querySelector('.booking-bar button').getBoundingClientRect().height >= 50");
+  await expect(cdp, "booking contact enlarged", "document.querySelector('.booking-bar button').getBoundingClientRect().height >= 62");
   await cdp.eval("document.querySelector('.booking-bar button').click()");
   await delay(250);
   await expect(cdp, "modal visible", "document.querySelector('.modal.visible') !== null");
@@ -100,6 +104,7 @@ try {
     "mobile device before prices",
     "document.querySelector('.device-card').getBoundingClientRect().top < document.querySelector('.prices-panel').getBoundingClientRect().top"
   );
+  await expect(cdp, "mobile horizontal selector gesture", "getComputedStyle(document.querySelector('[data-horizontal-scroll]')).touchAction === 'pan-x'");
   await cdp.eval("document.querySelectorAll('.price-row .select-service')[1].click()");
   await delay(200);
   await cdp.eval("document.querySelector('.booking-bar button').click()");
@@ -111,11 +116,15 @@ try {
   await delay(300);
   await expect(cdp, "home page class", "document.body.classList.contains('home-page')");
   await expect(cdp, "home light theme class", "document.body.classList.contains('home-page--light')");
+  await expect(cdp, "blue header", "getComputedStyle(document.querySelector('.site-header')).backgroundImage.includes('linear-gradient')");
+  await expect(cdp, "white booking button", "getComputedStyle(document.querySelector('.site-header .btn-primary')).backgroundColor === 'rgb(255, 255, 255)'");
   await expect(cdp, "hero image loaded", "document.querySelector('.light-hero__media img')?.naturalWidth > 1000");
   await expect(cdp, "animated repair stage present", "document.querySelector('.repair-stage__pulse') !== null && document.querySelectorAll('.repair-float').length === 3");
   await expect(cdp, "revival counter present", "document.querySelector('[data-revival-counter]') !== null");
   await expect(cdp, "revival counter copy", "document.querySelector('.repair-stage__counter')?.textContent.includes('Устройств отремонтировано') && document.querySelector('.repair-stage__counter')?.textContent.includes('счёт продолжает расти')");
-  await expect(cdp, "mobile hero details below counter", "document.querySelector('.hero-copy__details').getBoundingClientRect().top > document.querySelector('.repair-stage').getBoundingClientRect().bottom - 2");
+  await expect(cdp, "hero action strip", "document.querySelector('.hero-action-bar .hero__actions') !== null && document.querySelectorAll('.hero-action-bar .hero-trust span').length === 3");
+  await expect(cdp, "review follows specialization", "document.querySelector('#specialization').nextElementSibling?.id === 'reviews'");
+  await expect(cdp, "category background images", "document.querySelectorAll('.cat-card__image').length === 6 && [...document.querySelectorAll('.cat-card__image')].every((image) => image.naturalWidth > 0)");
   await expect(cdp, "repair status widget", "document.querySelector('.status-widget iframe')?.src.includes('app.helloclient.by/check.html')");
   await expect(cdp, "review platform summaries", "document.querySelector('.platform-rating--yandex')?.textContent.includes('26 отзывов') && document.querySelector('.platform-rating--twogis')?.textContent.includes('239 отзывов')");
   const revivalDuring = await cdp.eval("Number(document.querySelector('[data-revival-counter]')?.textContent.replace(/\\D/g, '') || 0)");
@@ -128,6 +137,12 @@ try {
   if (revivalGrown.result.value <= revivalReady.result.value) failures.push("revival counter keeps growing");
   await expect(cdp, "home mobile no body overflow", "document.documentElement.scrollWidth <= window.innerWidth + 2");
   await expect(cdp, "light hero image remains visible", "getComputedStyle(document.querySelector('.light-hero__media img')).display !== 'none'");
+
+  await setViewport(cdp, 1280, 900, false);
+  await navigate(cdp, `${baseUrl}/b2b/`);
+  await expect(cdp, "b2b page rendered", "document.body.classList.contains('b2b-page') && document.querySelectorAll('.b2b-services article').length === 4");
+  await expect(cdp, "b2b form", "document.querySelector('.b2b-form')?.action.includes('shineteatr@gmail.com')");
+  await expect(cdp, "b2b no body overflow", "document.documentElement.scrollWidth <= window.innerWidth + 2");
 
   if (consoleErrors.length) {
     failures.push(`console errors: ${consoleErrors.join("; ")}`);

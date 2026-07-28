@@ -1,7 +1,7 @@
-# 10106
+# 10107
 
-Light-theme Service 101 concept with a responsive repair catalog, animated hero counter,
-booking forms, repair status widget and review platform summaries.
+Service 101 concept with a blue navigation header, responsive repair catalog, B2B page,
+animated counters, booking forms, repair status widget and review platform summaries.
 
 ## Update prices
 
@@ -18,6 +18,7 @@ CSV columns used by the site:
 - `category_slug`
 - `brand_slug`
 - `model_slug`
+- `средняя_цена_с_деталью`
 
 To regenerate SEO pages after adding new devices, run:
 

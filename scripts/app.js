@@ -90,6 +90,7 @@
   });
 
   async function loadCatalog() {
+    if (!["category", "model", "onsite"].includes(pageState.page)) return;
     try {
       const response = await fetch(`${root}/data/services.csv`, { cache: "no-store" });
       if (!response.ok) throw new Error(`Services ${response.status}`);
@@ -115,6 +116,7 @@
       position: row["вид_работы"] || row["позиция"] || row.position || "",
       category: row["категория"] || row.category || "",
       cost: row["цена"] || row["стоимость"] || row.cost || "",
+      averageCost: row["средняя_цена_с_деталью"] || row.averageCost || row["цена"] || "",
       description: row["описание"] || row.description || "",
       image: row["фото_1"] || row["ссылка_на_картинку"] || row.image || "",
       categorySlug: row.category_slug || "",
@@ -242,51 +244,52 @@
     app.innerHTML = `
       <div class="page-shell">
         <section class="catalog-top">
-          <div class="container catalog-top__inner">
-            <div class="catalog-tabs">
-              ${renderTopTabs(activeRecord.categorySlug, options.onsite)}
+          <div class="container">
+            <div class="selection-shell">
+              <div class="selection-shell__main">
+                <div class="catalog-tabs" data-horizontal-scroll>
+                  ${renderTopTabs(activeRecord.categorySlug, options.onsite)}
+                </div>
+                <div class="catalog-controls">
+                  <div>
+                    <p class="control-label">Бренд / тип устройства</p>
+                    <div class="chip-row brand-chip-row" data-horizontal-scroll>
+                      ${brands
+                        .map((brand) => {
+                          const firstModel = categoryRecords.find((record) => record.brandSlug === brand.brandSlug);
+                          return `<a class="chip ${brand.brandSlug === activeRecord.brandSlug ? "active" : ""}" href="${modelHref(
+                            firstModel
+                          )}">${escapeHTML(brand.brand)}</a>`;
+                        })
+                        .join("")}
+                    </div>
+                  </div>
+                  <div>
+                    <p class="control-label">Модель</p>
+                    <div class="model-scroller" data-model-scroller>
+                      <button class="model-scroller__button model-scroller__button--prev" type="button" aria-label="Предыдущие модели">‹</button>
+                      <div class="chip-row model-chip-row" data-model-row data-horizontal-scroll>
+                        ${models
+                          .map(
+                            (model) =>
+                              `<a class="chip ${model.modelSlug === activeRecord.modelSlug ? "active" : ""}" href="${modelHref(
+                                model
+                              )}">${escapeHTML(model.model)}</a>`
+                          )
+                          .join("")}
+                      </div>
+                      <button class="model-scroller__button model-scroller__button--next" type="button" aria-label="Следующие модели">›</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              ${renderBrandCounter(activeRecord)}
             </div>
           </div>
         </section>
 
         <section class="section catalog-section">
           <div class="container">
-            <div class="catalog-controls">
-              <div>
-                <div class="control-heading">
-                  <p class="control-label">Бренд / тип устройства</p>
-                  ${renderBrandCounter(activeRecord)}
-                </div>
-                <div class="chip-row">
-                  ${brands
-                    .map((brand) => {
-                      const firstModel = categoryRecords.find((record) => record.brandSlug === brand.brandSlug);
-                      return `<a class="chip ${brand.brandSlug === activeRecord.brandSlug ? "active" : ""}" href="${modelHref(
-                        firstModel
-                      )}">${escapeHTML(brand.brand)}</a>`;
-                    })
-                    .join("")}
-                </div>
-              </div>
-              <div>
-                <p class="control-label">Модель</p>
-                <div class="model-scroller" data-model-scroller>
-                  <button class="model-scroller__button model-scroller__button--prev" type="button" aria-label="Предыдущие модели">‹</button>
-                  <div class="chip-row model-chip-row" data-model-row>
-                    ${models
-                      .map(
-                        (model) =>
-                          `<a class="chip ${model.modelSlug === activeRecord.modelSlug ? "active" : ""}" href="${modelHref(
-                            model
-                          )}">${escapeHTML(model.model)}</a>`
-                      )
-                      .join("")}
-                  </div>
-                  <button class="model-scroller__button model-scroller__button--next" type="button" aria-label="Следующие модели">›</button>
-                </div>
-              </div>
-            </div>
-
             <div class="device-workspace">
               ${renderDeviceCard(activeRecord, category, options)}
               ${renderPricePanel(activeRecord, category)}
@@ -305,6 +308,7 @@
 
     bindServiceButtons();
     bindModelScroller();
+    bindHorizontalScroll();
     syncBookingBar();
     startBrandCounter(activeRecord);
   }
@@ -351,11 +355,6 @@
               ? `<img src="${escapeAttr(activeRecord.image)}" alt="${escapeAttr(title)}" loading="eager">`
               : `<div class="device-card__placeholder" aria-hidden="true"></div>`
           }
-          <div class="device-media-tags" aria-hidden="true">
-            <span>от 30 мин</span>
-            <span>гарантия до 12 мес</span>
-            <span>2 филиала</span>
-          </div>
         </div>
         <div class="device-card__body">
           <p class="device-kicker">${escapeHTML(category.title)}</p>
@@ -368,7 +367,6 @@
           <div class="device-facts">
             <span><strong>от 30 мин</strong> типовой ремонт</span>
             <span><strong>до 12 мес</strong> гарантия</span>
-            <span><strong>2 филиала</strong> в городе</span>
           </div>
         </div>
       </article>
@@ -392,7 +390,7 @@
           <div class="price-list__head" aria-hidden="true">
             <span>Работа</span>
             <span>Срок</span>
-            <span>Средняя цена ремонта</span>
+            <span>Средняя цена с деталью</span>
             <span></span>
           </div>
           ${firstServices.map(renderServiceRow).join("")}
@@ -419,8 +417,8 @@
         </div>
         <div class="price-row__time">${escapeHTML(service.time || "по согласованию")}</div>
         <div class="price-row__price ${free ? "free" : ""}">
-          <span class="price-row__caption">Средняя цена</span>
-          ${escapeHTML(service.cost)}
+          <span class="price-row__caption">С деталью</span>
+          ${escapeHTML(service.averageCost)}
         </div>
         <button class="select-service" type="button">${selected ? "Выбрано" : "Выбрать"}</button>
       </div>
@@ -430,7 +428,7 @@
   function renderBrandCounter(activeRecord) {
     return `
       <div class="brand-counter" data-brand-counter>
-        <span class="brand-counter__label">Устройств отремонтировано</span>
+        <span class="brand-counter__label">Отремонтировано устройств</span>
         <strong data-brand-counter-value>${formatNumber(getBrandCounterStart(activeRecord))}</strong>
         <span class="brand-counter__brand">${escapeHTML(activeRecord.brand)}</span>
       </div>
@@ -616,6 +614,48 @@
         });
         update();
       });
+    });
+  }
+
+  function bindHorizontalScroll() {
+    document.querySelectorAll("[data-horizontal-scroll]").forEach((row) => {
+      let startX = 0;
+      let startScroll = 0;
+      let moved = false;
+
+      row.addEventListener("pointerdown", (event) => {
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+        startX = event.clientX;
+        startScroll = row.scrollLeft;
+        moved = false;
+        row.classList.add("is-dragging");
+        row.setPointerCapture?.(event.pointerId);
+      });
+
+      row.addEventListener("pointermove", (event) => {
+        if (!row.classList.contains("is-dragging")) return;
+        const distance = event.clientX - startX;
+        if (Math.abs(distance) > 5) moved = true;
+        row.scrollLeft = startScroll - distance;
+      });
+
+      const stop = (event) => {
+        row.classList.remove("is-dragging");
+        if (row.hasPointerCapture?.(event.pointerId)) row.releasePointerCapture(event.pointerId);
+      };
+
+      row.addEventListener("pointerup", stop);
+      row.addEventListener("pointercancel", stop);
+      row.addEventListener(
+        "click",
+        (event) => {
+          if (!moved) return;
+          event.preventDefault();
+          event.stopPropagation();
+          moved = false;
+        },
+        true
+      );
     });
   }
 

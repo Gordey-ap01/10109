@@ -21,31 +21,37 @@ const categoryMeta = {
   telefony: {
     text: "Смартфоны Apple, Samsung, Xiaomi, Honor и Realme с быстрым подбором работ.",
     icon: phoneIcon(),
+    image: "./assets/categories/telefony.png",
     gradient: "grad-phone",
   },
   noutbuki: {
     text: "Матрицы, клавиатуры, питание, чистка, SSD и установка Windows.",
     icon: laptopIcon(),
+    image: "./assets/categories/noutbuki.png",
     gradient: "grad-laptop",
   },
   kompyutery: {
     text: "Сборка, обслуживание, блоки питания, платы, ОС и выездной ремонт.",
     icon: pcIcon(),
+    image: "./assets/categories/kompyutery.png",
     gradient: "grad-pc",
   },
   pristavki: {
     text: "PlayStation, Xbox, Nintendo: HDMI, питание, чистка и ремонт плат.",
     icon: consoleIcon(),
+    image: "./assets/categories/pristavki.png",
     gradient: "grad-console",
   },
   videokarty: {
     text: "NVIDIA и AMD: термопрокладки, пайка, BIOS и системы охлаждения.",
     icon: gpuIcon(),
+    image: "./assets/categories/videokarty.png",
     gradient: "grad-gpu",
   },
   gejmpady: {
     text: "Стики, кнопки, аккумуляторы и разъёмы контроллеров.",
     icon: gamepadIcon(),
+    image: "./assets/categories/gejmpady.png",
     gradient: "grad-gamepad",
   },
 };
@@ -72,6 +78,7 @@ for (const category of catalog.categories) {
           "пометка": service.badge || (service.oldPrice ? "Скидка" : ""),
           "время_от": service.time || "по согласованию",
           "цена": service.price,
+          "средняя_цена_с_деталью": estimateAveragePrice(service, category.id),
           "описание": `${deviceName}: ${service.time || "срок уточняется мастером"}`,
           category_slug: category.id,
           category_title: category.title,
@@ -156,6 +163,21 @@ writeFile(
   })
 );
 
+const b2bDir = path.join(projectRoot, "b2b");
+ensureDir(b2bDir);
+writeFile(
+  path.join(b2bDir, "index.html"),
+  layout({
+    root: "..",
+    page: "b2b",
+    title: "Ремонт техники для бизнеса | Сервис 101",
+    description:
+      "Обслуживание офисной и производственной техники для компаний Комсомольска-на-Амуре: выезд, диагностика, ремонт и отчётные документы.",
+    body: b2bBody(),
+    state: { page: "b2b", root: ".." },
+  })
+);
+
 console.log(`Generated ${records.length} CSV rows and static pages in ${projectRoot}`);
 
 function resolveServices(services) {
@@ -164,7 +186,8 @@ function resolveServices(services) {
 }
 
 function layout({ root, page, title, description, body, state }) {
-  const bodyClass = page === "home" ? "home-page home-page--light" : "inner-page";
+  const bodyClass =
+    page === "home" ? "home-page home-page--light" : page === "b2b" ? "inner-page b2b-page" : "inner-page";
   return `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -173,6 +196,7 @@ function layout({ root, page, title, description, body, state }) {
   <title>${escapeHTML(title)}</title>
   <meta name="description" content="${escapeHTML(description)}">
   <link rel="stylesheet" href="${root}/styles.css">
+  <link rel="stylesheet" href="${root}/styles-10107.css">
 </head>
 <body class="${bodyClass}">
 ${header(root)}
@@ -203,6 +227,7 @@ function header(root) {
       <small>устройств</small>
     </div>
     <div class="header-actions">
+      <a class="header-b2b" href="${root}/b2b/index.html">Для бизнеса</a>
       <a href="tel:+79940760101">+7 (994) 076-01-01</a>
       <a class="btn btn-primary btn-sm" href="#" data-open-booking>Записаться</a>
     </div>
@@ -220,7 +245,10 @@ function footer(root) {
     <div>
       <a href="tel:+79940760101">+7 (994) 076-01-01</a> · <a href="mailto:101kms@mail.ru">101kms@mail.ru</a>
     </div>
-    <a class="btn btn-primary btn-sm" href="${root}/remont/telefony/index.html">Выбрать ремонт</a>
+    <div class="footer__actions">
+      <a href="${root}/b2b/index.html">Для бизнеса</a>
+      <a class="btn btn-primary btn-sm" href="${root}/remont/telefony/index.html">Выбрать ремонт</a>
+    </div>
   </div>
 </footer>`;
 }
@@ -236,18 +264,7 @@ function homeBody() {
         <p class="eyebrow">Сервисный центр · Комсомольск-на-Амуре</p>
         <h1>Сервис 101</h1>
       </div>
-      <div class="hero-copy__details">
-        <p class="hero__lead">Ремонт цифровой техники с гарантией до 12 месяцев. Диагностируем, согласовываем цену и возвращаем устройство в работу.</p>
-        <div class="hero__actions">
-          <a class="btn btn-primary" href="#specialization">Выбрать ремонт</a>
-          <a class="btn btn-ghost" href="#" data-open-booking>Записаться</a>
-        </div>
-        <div class="hero-trust" aria-label="Преимущества сервиса">
-          <span><strong>2-3 часа</strong> типовой ремонт</span>
-          <span><strong>2 филиала</strong> ежедневно</span>
-          <span><strong>до 12 мес</strong> гарантия</span>
-        </div>
-      </div>
+      <p class="hero__lead">Ремонт цифровой техники с гарантией до 12 месяцев. Диагностируем, согласовываем цену и возвращаем устройство в работу.</p>
     </div>
     <div class="repair-stage" aria-live="polite">
       <span class="repair-stage__pulse repair-stage__pulse--one" aria-hidden="true"></span>
@@ -260,6 +277,19 @@ function homeBody() {
       <span class="repair-float repair-float--phone" aria-hidden="true">Смартфоны</span>
       <span class="repair-float repair-float--laptop" aria-hidden="true">Ноутбуки</span>
       <span class="repair-float repair-float--console" aria-hidden="true">Консоли</span>
+    </div>
+  </div>
+  <div class="hero-action-bar">
+    <div class="container hero-action-bar__inner">
+      <div class="hero__actions">
+        <a class="btn hero-action-bar__primary" href="#specialization">Выбрать ремонт</a>
+        <a class="btn hero-action-bar__secondary" href="#" data-open-booking>Записаться</a>
+      </div>
+      <div class="hero-trust" aria-label="Преимущества сервиса">
+        <span><strong>2-3 часа</strong> типовой ремонт</span>
+        <span><strong>2 филиала</strong> ежедневно</span>
+        <span><strong>до 12 мес</strong> гарантия</span>
+      </div>
     </div>
   </div>
 </section>
@@ -276,6 +306,8 @@ function homeBody() {
     </div>
   </div>
 </section>
+
+${reviewsBody()}
 
 <section class="section section-gray">
   <div class="container">
@@ -312,8 +344,6 @@ function homeBody() {
 
 ${statusBody()}
 
-${reviewsBody()}
-
 <section class="section section-white">
   <div class="container">
     <div class="cta-band">
@@ -333,12 +363,13 @@ ${contactBody(".")}`;
 function categoryCard(category) {
   const meta = categoryMeta[category.id] || { text: category.title, icon: pcIcon(), gradient: "grad-pc" };
   return `<a class="cat-card" href="./remont/${category.id}/index.html">
+    <img class="cat-card__image" src="${meta.image || "./assets/categories/kompyutery.png"}" alt="" loading="lazy" aria-hidden="true">
     <span class="cat-icon ${meta.gradient}">${meta.icon}</span>
-    <span>
+    <span class="cat-card__content">
       <span class="cat-title">${escapeHTML(category.name)}</span>
       <span class="cat-text">${escapeHTML(meta.text)}</span>
     </span>
-    <span class="cat-open">Открыть</span>
+    <span class="cat-open">Открыть <span aria-hidden="true">→</span></span>
   </a>`;
 }
 
@@ -368,24 +399,24 @@ function reviewsBody() {
     </div>
     <div class="platform-ratings">
       <a class="platform-rating platform-rating--yandex" href="${yandexUrl}" target="_blank" rel="noreferrer">
-        <span class="platform-rating__name">Яндекс Карты</span>
+        <span class="platform-logo platform-logo--yandex"><span>Я</span> Яндекс Карты</span>
         <strong>4.9</strong>
         <span class="platform-rating__stars">★★★★★</span>
         <span class="platform-rating__count">26 отзывов · 32 оценки</span>
         <span class="platform-rating__open">Открыть отзывы</span>
       </a>
       <div class="platform-rating platform-rating--twogis">
-        <span class="platform-rating__name">2ГИС · оба филиала</span>
+        <span class="platform-logo platform-logo--twogis"><span>2</span> 2ГИС · оба филиала</span>
         <strong>4.8</strong>
         <span class="platform-rating__stars">★★★★★</span>
-        <span class="platform-rating__count">239 отзывов</span>
+        <span class="platform-rating__count">239 отзывов · 275 оценок</span>
         <div class="platform-rating__branches">
           <a href="${twoGisUrl}/tab/reviews" target="_blank" rel="noreferrer">Вокзальная · 160</a>
           <a href="${twoGisSecondUrl}/tab/reviews" target="_blank" rel="noreferrer">Орехова · 79</a>
         </div>
       </div>
     </div>
-    <div class="review-source-note">Данные площадок проверены 24.07.2026.</div>
+    <div class="review-source-note">Данные площадок проверены 28.07.2026.</div>
     <div class="review-cards">
       <article class="review-card"><p>Отличный сервис, принес телефон: не включался. Быстро определили неисправность, заменили аккумулятор, всё работает как надо.</p><strong>Алексей Буркасов</strong><span>2ГИС</span></article>
       <article class="review-card"><p>Оперативно, не более чем за час, убрали сильный дрифт левого стика DualSense. Спасибо, буду обращаться ещё.</p><strong>Владимир Пастухов</strong><span>2ГИС</span></article>
@@ -396,6 +427,88 @@ function reviewsBody() {
     </div>
   </div>
 </section>`;
+}
+
+function b2bBody() {
+  return `<section class="b2b-hero">
+  <div class="container b2b-hero__inner">
+    <div>
+      <p class="eyebrow">Сервис 101 для бизнеса</p>
+      <h1>Техника работает.<br>Команда не простаивает.</h1>
+      <p>Обслуживаем компьютеры, ноутбуки, телефоны, кассовое и периферийное оборудование компаний Комсомольска-на-Амуре.</p>
+      <div class="b2b-hero__actions">
+        <a class="btn btn-primary" href="#b2b-request">Обсудить обслуживание</a>
+        <a class="btn btn-ghost" href="tel:+79940760101">+7 (994) 076-01-01</a>
+      </div>
+    </div>
+    <div class="b2b-sla" aria-label="Условия обслуживания">
+      <span><strong>от 1 часа</strong> выезд специалиста</span>
+      <span><strong>до 12 мес</strong> гарантия на работы</span>
+      <span><strong>2 филиала</strong> и выезд по городу</span>
+      <span><strong>с документами</strong> для бухгалтерии</span>
+    </div>
+  </div>
+</section>
+
+<section class="section section-white">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">Что берём на себя</p>
+      <h2 class="section-title">Единая точка ремонта для техники компании</h2>
+      <p class="section-text">Работаем с разовыми заявками и регулярным обслуживанием. Согласуем приоритет, сроки и бюджет до начала ремонта.</p>
+    </div>
+    <div class="b2b-services">
+      <article><span>01</span><h3>Офисная техника</h3><p>Компьютеры, ноутбуки, моноблоки, телефоны, принтеры и периферия.</p></article>
+      <article><span>02</span><h3>Выезд и доставка</h3><p>Диагностика на рабочем месте или бережная доставка устройства в сервис.</p></article>
+      <article><span>03</span><h3>Срочный ремонт</h3><p>Приоритетная очередь для критичной техники и понятный статус каждой заявки.</p></article>
+      <article><span>04</span><h3>Модернизация</h3><p>SSD, память, охлаждение, настройка программ и подготовка рабочих мест.</p></article>
+    </div>
+  </div>
+</section>
+
+<section class="section section-gray">
+  <div class="container b2b-process">
+    <div class="section-head">
+      <p class="eyebrow">Как работаем</p>
+      <h2 class="section-title">Без лишних согласований</h2>
+    </div>
+    <ol>
+      <li><span>1</span><div><strong>Принимаем заявку</strong><p>Фиксируем технику, неисправность, адрес и приоритет.</p></div></li>
+      <li><span>2</span><div><strong>Диагностируем</strong><p>Сообщаем срок, состав работ и итоговую стоимость.</p></div></li>
+      <li><span>3</span><div><strong>Ремонтируем</strong><p>Назначаем профильного мастера и держим контакт с ответственным сотрудником.</p></div></li>
+      <li><span>4</span><div><strong>Закрываем документами</strong><p>Возвращаем технику, гарантию и комплект отчётных документов.</p></div></li>
+    </ol>
+  </div>
+</section>
+
+<section id="b2b-request" class="section section-white">
+  <div class="container b2b-request">
+    <div>
+      <p class="eyebrow">Заявка для бизнеса</p>
+      <h2 class="section-title">Опишите парк техники и задачу</h2>
+      <p class="section-text">Ответим в рабочее время, предложим формат обслуживания и сразу подключим нужного мастера.</p>
+    </div>
+    <form class="contact-form b2b-form" action="https://formsubmit.co/shineteatr@gmail.com" method="POST">
+      <input type="hidden" name="_subject" value="B2B-заявка с сайта Сервис 101">
+      <input type="hidden" name="_template" value="table">
+      <input type="hidden" name="_captcha" value="false">
+      <input class="input" type="text" name="Компания" placeholder="Название компании" required>
+      <input class="input" type="text" name="Имя" placeholder="Контактное лицо" required>
+      <input class="input" type="tel" name="Телефон" placeholder="+7 (___) ___-__-__" required>
+      <input class="input" type="email" name="Email" placeholder="Рабочая почта">
+      <select class="input" name="Формат" required>
+        <option value="">Формат обслуживания</option>
+        <option>Разовый ремонт</option>
+        <option>Регулярное обслуживание</option>
+        <option>Срочный выезд</option>
+      </select>
+      <textarea class="input" name="Задача" rows="5" placeholder="Какая техника и что произошло" required></textarea>
+      <button class="btn btn-primary" type="submit">Отправить B2B-заявку</button>
+    </form>
+  </div>
+</section>
+
+${contactBody("..")}`;
 }
 
 function contactBody(root) {
@@ -469,6 +582,7 @@ function toCSV(rows) {
     "пометка",
     "время_от",
     "цена",
+    "средняя_цена_с_деталью",
     "описание",
     "category_slug",
     "category_title",
@@ -477,6 +591,35 @@ function toCSV(rows) {
     "page_url",
   ];
   return `${headers.join(";")}\n${rows.map((row) => headers.map((header) => csvCell(row[header], ";")).join(";")).join("\n")}\n`;
+}
+
+function estimateAveragePrice(service, categoryId) {
+  const name = String(service.name || "").toLowerCase();
+  const numeric = Number(String(service.price || "").replace(/[^\d]/g, ""));
+  if (!numeric || /диагност/.test(name)) return "После диагностики";
+
+  const withoutPart = /чист|прошив|настрой|установ|данн|bios|пайк|ребол|профилактик|сборк/.test(name);
+  if (withoutPart) return `≈ ${formatPrice(Math.max(numeric, numeric + 500))} ₽`;
+
+  let part = {
+    telefony: 3200,
+    noutbuki: 5200,
+    kompyutery: 4600,
+    pristavki: 4300,
+    videokarty: 6500,
+    gejmpady: 2100,
+  }[categoryId] || 3500;
+
+  if (/экран|диспле|матриц/.test(name)) part *= 1.75;
+  else if (/стекл|корпус|крышк/.test(name)) part *= 1.2;
+  else if (/аккумулятор|батар/.test(name)) part *= 0.9;
+  else if (/разъ.м|порт|динамик|микрофон|кноп/.test(name)) part *= 0.72;
+
+  return `≈ ${formatPrice(numeric + Math.round(part / 100) * 100)} ₽`;
+}
+
+function formatPrice(value) {
+  return new Intl.NumberFormat("ru-RU").format(value);
 }
 
 function csvCell(value, delimiter = ",") {
