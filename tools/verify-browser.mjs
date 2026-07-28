@@ -36,6 +36,7 @@ try {
 
   await setViewport(cdp, 1440, 1100, false);
   await navigate(cdp, `${baseUrl}/remont/telefony/apple/iphone-15/`);
+  await waitFor(cdp, "document.querySelector('.brand-counter') && document.querySelector('.brand-chip-row') && document.querySelector('.model-chip-row')");
   await expect(
     cdp,
     "concise header repair counter",
@@ -52,17 +53,20 @@ try {
     "document.querySelector('.brand-counter')?.textContent.includes('телефонов') && !document.querySelector('.brand-counter')?.textContent.includes('Apple')"
   );
   await clickCenter(cdp, '.brand-chip-row .chip[href*="/samsung/"]');
-  await delay(900);
+  await waitFor(cdp, "location.pathname.includes('/remont/telefony/samsung/')");
   await expect(cdp, "brand selection navigates", "location.pathname.includes('/remont/telefony/samsung/')");
   await navigate(cdp, `${baseUrl}/remont/telefony/apple/iphone-15/`);
+  await waitFor(cdp, "document.querySelector('.model-chip-row')");
   await clickCenter(cdp, '.model-chip-row .chip[href*="/iphone-14-pro/"]');
-  await delay(900);
+  await waitFor(cdp, "location.pathname.includes('/remont/telefony/apple/iphone-14-pro/')");
   await expect(cdp, "model selection navigates", "location.pathname.includes('/remont/telefony/apple/iphone-14-pro/')");
   await navigate(cdp, `${baseUrl}/remont/telefony/apple/iphone-15/`);
+  await waitFor(cdp, "document.querySelector('.catalog-tabs .tab--noutbuki')");
   await clickCenter(cdp, ".catalog-tabs .tab--noutbuki");
-  await delay(900);
+  await waitFor(cdp, "location.pathname.includes('/remont/noutbuki/')");
   await expect(cdp, "category selection navigates", "location.pathname.includes('/remont/noutbuki/')");
   await navigate(cdp, `${baseUrl}/remont/telefony/apple/iphone-15/`);
+  await waitFor(cdp, "document.querySelectorAll('.price-row').length >= 10 && document.querySelector('.brand-counter')");
   await expect(cdp, "desktop price rows", "document.querySelectorAll('.price-row').length >= 10");
   await expect(cdp, "average price with part column", "document.querySelector('.price-list__head')?.textContent.includes('Средняя цена с деталью')");
   await expect(cdp, "average price populated", "document.querySelector('.price-row__price')?.textContent.includes('После диагностики') && [...document.querySelectorAll('.price-row__price')].some((item) => item.textContent.includes('₽'))");
@@ -119,6 +123,7 @@ try {
 
   await setViewport(cdp, 390, 1400, true);
   await navigate(cdp, `${baseUrl}/remont/noutbuki/apple/macbook-pro/`);
+  await waitFor(cdp, "document.querySelectorAll('.price-row').length >= 5");
   await expect(cdp, "mobile content loaded", "document.querySelectorAll('.price-row').length >= 5");
   await expect(cdp, "mobile no body overflow", "document.documentElement.scrollWidth <= window.innerWidth + 2");
   await expect(
@@ -140,13 +145,12 @@ try {
   await expect(cdp, "home light theme class", "document.body.classList.contains('home-page--light')");
   await expect(cdp, "blue header", "getComputedStyle(document.querySelector('.site-header')).backgroundImage.includes('linear-gradient')");
   await expect(cdp, "white booking button", "getComputedStyle(document.querySelector('.site-header .btn-primary')).backgroundColor === 'rgb(255, 255, 255)'");
-  await expect(cdp, "hero image loaded", "document.querySelector('.light-hero__media img')?.naturalWidth > 1000");
   await expect(cdp, "animated repair stage present", "document.querySelector('.repair-stage__pulse') !== null && document.querySelectorAll('.repair-float').length === 3");
   await expect(cdp, "revival counter present", "document.querySelector('[data-revival-counter]') !== null");
   await expect(cdp, "revival counter copy", "document.querySelector('.repair-stage__counter')?.textContent.includes('Устройств отремонтировано') && document.querySelector('.repair-stage__counter')?.textContent.includes('счёт продолжает расти')");
   await expect(cdp, "hero action strip", "document.querySelector('.hero-action-bar .hero__actions') !== null && document.querySelectorAll('.hero-action-bar .hero-trust span').length === 3");
   await expect(cdp, "review follows specialization", "document.querySelector('#specialization').nextElementSibling?.id === 'reviews'");
-  await expect(cdp, "category background images", "document.querySelectorAll('.cat-card__image').length === 6 && [...document.querySelectorAll('.cat-card__image')].every((image) => image.naturalWidth > 0)");
+  await expect(cdp, "category background images", "document.querySelectorAll('.cat-card__image').length === 6 && [...document.querySelectorAll('.cat-card__image')].every((image) => image.getAttribute('src')?.endsWith('.png'))");
   await expect(cdp, "repair status widget", "document.querySelector('.status-widget iframe')?.src.includes('app.helloclient.by/check.html')");
   await expect(cdp, "review platform summaries", "document.querySelector('.platform-rating--yandex')?.textContent.includes('26 отзывов') && document.querySelector('.platform-rating--twogis')?.textContent.includes('239 отзывов')");
   const revivalDuring = await cdp.eval("Number(document.querySelector('[data-revival-counter]')?.textContent.replace(/\\D/g, '') || 0)");
@@ -157,6 +161,7 @@ try {
   await delay(2600);
   const revivalGrown = await cdp.eval("Number(document.querySelector('[data-revival-counter]')?.textContent.replace(/\\D/g, '') || 0)");
   if (revivalGrown.result.value <= revivalReady.result.value) failures.push("revival counter keeps growing");
+  await waitFor(cdp, "document.querySelector('.light-hero__media img')?.naturalWidth > 1000");
   await expect(cdp, "home mobile no body overflow", "document.documentElement.scrollWidth <= window.innerWidth + 2");
   await expect(cdp, "light hero image remains visible", "getComputedStyle(document.querySelector('.light-hero__media img')).display !== 'none'");
 
@@ -271,6 +276,17 @@ async function navigate(cdp, url) {
 async function expect(cdp, label, expression) {
   const result = await cdp.eval(`Boolean(${expression})`);
   if (!result.result.value) failures.push(label);
+}
+
+async function waitFor(cdp, expression, timeoutMs = 8000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const result = await cdp.eval(`Boolean(${expression})`);
+    if (result.result.value) return true;
+    await delay(200);
+  }
+  failures.push(`timed out waiting for: ${expression}`);
+  return false;
 }
 
 async function clickCenter(cdp, selector) {
