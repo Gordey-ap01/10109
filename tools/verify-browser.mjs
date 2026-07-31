@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 const chrome = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const debugPort = 9333;
 const baseUrl = process.argv[2] || "http://127.0.0.1:8082";
-const userDataDir = path.join(os.tmpdir(), `service-10107-chrome-${Date.now()}`);
+const userDataDir = path.join(os.tmpdir(), `service-10108-chrome-${Date.now()}`);
 const failures = [];
 const consoleErrors = [];
 
@@ -148,8 +148,13 @@ try {
   await expect(cdp, "animated repair stage present", "document.querySelector('.repair-stage__pulse') !== null && document.querySelectorAll('.repair-float').length === 3");
   await expect(cdp, "revival counter present", "document.querySelector('[data-revival-counter]') !== null");
   await expect(cdp, "revival counter copy", "document.querySelector('.repair-stage__counter')?.textContent.includes('Устройств отремонтировано') && document.querySelector('.repair-stage__counter')?.textContent.includes('счёт продолжает расти')");
-  await expect(cdp, "hero action strip", "document.querySelector('.hero-action-bar .hero__actions') !== null && document.querySelectorAll('.hero-action-bar .hero-trust span').length === 3");
-  await expect(cdp, "review follows specialization", "document.querySelector('#specialization').nextElementSibling?.id === 'reviews'");
+  await expect(cdp, "hero action strip", "document.querySelectorAll('.hero-action-bar .hero__actions .btn').length === 3 && document.querySelectorAll('.hero-action-bar .hero-trust span').length === 3");
+  await expect(cdp, "hero onsite action", "document.querySelector('.hero-action-bar__onsite')?.getAttribute('href') === '#onsite-service' && document.querySelector('.hero-action-bar__onsite')?.textContent.includes('Заказать выезд мастера')");
+  await expect(cdp, "onsite follows specialization", "document.querySelector('#specialization').nextElementSibling?.id === 'onsite-service'");
+  await expect(cdp, "reviews follow onsite", "document.querySelector('#onsite-service').nextElementSibling?.id === 'reviews'");
+  await expect(cdp, "onsite section content", "document.querySelectorAll('.onsite-steps li').length === 3 && document.querySelectorAll('.onsite-scope span').length === 4");
+  await expect(cdp, "onsite image source", "document.querySelector('.onsite-media img')?.getAttribute('src')?.endsWith('onsite-master.webp')");
+  await expect(cdp, "onsite form", "document.querySelector('.onsite-form')?.action.includes('shineteatr@gmail.com') && document.querySelector('.onsite-form [name=\"Адрес\"]') !== null && document.querySelector('.onsite-form [name=\"Устройство\"]') !== null");
   await expect(cdp, "category background images", "document.querySelectorAll('.cat-card__image').length === 6 && [...document.querySelectorAll('.cat-card__image')].every((image) => image.getAttribute('src')?.endsWith('.png'))");
   await expect(cdp, "repair status widget", "document.querySelector('.status-widget iframe')?.src.includes('app.helloclient.by/check.html')");
   await expect(cdp, "review platform summaries", "document.querySelector('.platform-rating--yandex')?.textContent.includes('26 отзывов') && document.querySelector('.platform-rating--twogis')?.textContent.includes('239 отзывов')");
@@ -164,6 +169,14 @@ try {
   await waitFor(cdp, "document.querySelector('.light-hero__media img')?.naturalWidth > 1000");
   await expect(cdp, "home mobile no body overflow", "document.documentElement.scrollWidth <= window.innerWidth + 2");
   await expect(cdp, "light hero image remains visible", "getComputedStyle(document.querySelector('.light-hero__media img')).display !== 'none'");
+  await expect(cdp, "mobile onsite action full row", "document.querySelector('.hero-action-bar__onsite').getBoundingClientRect().width > document.querySelector('.hero-action-bar__primary').getBoundingClientRect().width * 1.8");
+  await expect(cdp, "mobile onsite order", "document.querySelector('.onsite-media').getBoundingClientRect().top < document.querySelector('.onsite-form').getBoundingClientRect().top");
+
+  await setViewport(cdp, 320, 900, true);
+  await navigate(cdp, `${baseUrl}/`);
+  await expect(cdp, "small mobile no body overflow", "document.documentElement.scrollWidth <= window.innerWidth + 2");
+  await expect(cdp, "small mobile hero actions fit", "document.querySelector('.hero-action-bar .hero__actions').getBoundingClientRect().right <= document.documentElement.clientWidth + 1");
+  await expect(cdp, "small mobile header fits", "[...document.querySelectorAll('.site-header__inner > *')].every((item) => item.getBoundingClientRect().right <= document.documentElement.clientWidth + 1)");
 
   await setViewport(cdp, 1280, 900, false);
   await navigate(cdp, `${baseUrl}/`);

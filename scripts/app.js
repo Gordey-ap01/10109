@@ -994,7 +994,7 @@
     }
 
     const revealItems = document.querySelectorAll(
-      ".cat-card, .service-row, .feature, .platform-rating, .review-card, .contact-form, .contact-card"
+      ".cat-card, .service-row, .feature, .platform-rating, .review-card, .contact-form, .contact-card, .onsite-media, .onsite-panel"
     );
     revealItems.forEach((item) => item.classList.add("reveal-item"));
     if (reducedMotion || !("IntersectionObserver" in window)) {

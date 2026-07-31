@@ -7,6 +7,7 @@
   <meta name="description" content="Сервис 101: ремонт телефонов, ноутбуков, компьютеров, приставок, видеокарт и геймпадов в Комсомольске-на-Амуре.">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./styles-10107.css">
+  <link rel="stylesheet" href="./styles-10108.css">
 </head>
 <body class="home-page home-page--light">
 <header class="site-header">
@@ -61,6 +62,10 @@
       <div class="hero__actions">
         <a class="btn hero-action-bar__primary" href="#specialization">Выбрать ремонт</a>
         <a class="btn hero-action-bar__secondary" href="#" data-open-booking>Записаться</a>
+        <a class="btn hero-action-bar__onsite" href="#onsite-service">
+          <span>Заказать выезд мастера</span>
+          <span class="hero-action-bar__arrow" aria-hidden="true">→</span>
+        </a>
       </div>
       <div class="hero-trust" aria-label="Преимущества сервиса">
         <span><strong>2-3 часа</strong> типовой ремонт</span>
@@ -128,6 +133,83 @@
     </span>
     <span class="cat-open">Открыть <span aria-hidden="true">→</span></span>
   </a>
+    </div>
+  </div>
+</section>
+
+<section id="onsite-service" class="section onsite-section">
+  <div class="container">
+    <div class="onsite-layout">
+      <figure class="onsite-media">
+        <img src="./assets/onsite-master.webp" alt="Мастер Сервиса 101 ремонтирует компьютер у клиента" width="1816" height="902" loading="lazy">
+        <figcaption class="onsite-media__caption">
+          <span class="onsite-live" aria-hidden="true"></span>
+          <span><strong>Выезд по Комсомольску-на-Амуре</strong> после согласования времени</span>
+        </figcaption>
+      </figure>
+
+      <div class="onsite-panel">
+        <div class="onsite-copy">
+          <p class="eyebrow">Выездной ремонт</p>
+          <h2 class="section-title">Мастер приедет туда, где стоит техника</h2>
+          <p class="section-text">Домой, в офис или на производство. Проведём диагностику и ремонт на месте, а если потребуется сложное оборудование — аккуратно доставим устройство в сервис.</p>
+        </div>
+
+        <div class="onsite-scope" aria-label="Что можно сделать на выезде">
+          <span>Ноутбуки и компьютеры</span>
+          <span>Настройка и модернизация</span>
+          <span>Диагностика на месте</span>
+          <span>Доставка в сервис</span>
+        </div>
+
+        <ol class="onsite-steps">
+          <li><span>01</span><p><strong>Оставьте заявку</strong>Укажите технику, адрес и неисправность.</p></li>
+          <li><span>02</span><p><strong>Мастер уточнит детали</strong>Согласует время и предварительный план работ.</p></li>
+          <li><span>03</span><p><strong>Приедем и решим проблему</strong>Отремонтируем на месте или предложим доставку.</p></li>
+        </ol>
+
+        <form class="onsite-form" action="https://formsubmit.co/shineteatr@gmail.com" method="POST">
+          <input type="hidden" name="_subject" value="Заявка на выезд мастера — Сервис 101">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="Тип заявки" value="Выезд мастера">
+
+          <div class="onsite-form__grid">
+            <label class="form-field">
+              <span>Имя</span>
+              <input class="input" type="text" name="Имя" autocomplete="name" placeholder="Как к вам обращаться" required>
+            </label>
+            <label class="form-field">
+              <span>Телефон</span>
+              <input class="input" type="tel" name="Телефон" autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__" required>
+            </label>
+            <label class="form-field form-field--wide">
+              <span>Адрес выезда</span>
+              <input class="input" type="text" name="Адрес" autocomplete="street-address" placeholder="Улица, дом, офис или организация" required>
+            </label>
+            <label class="form-field">
+              <span>Что ремонтируем</span>
+              <select class="input" name="Устройство" required>
+                <option value="">Выберите устройство</option>
+                <option>Ноутбук</option>
+                <option>Компьютер</option>
+                <option>Моноблок</option>
+                <option>Оргтехника</option>
+                <option>Другое</option>
+              </select>
+            </label>
+            <label class="form-field">
+              <span>Что случилось</span>
+              <input class="input" type="text" name="Неисправность" placeholder="Коротко опишите проблему">
+            </label>
+          </div>
+
+          <div class="onsite-form__footer">
+            <p>Перезвоним, уточним задачу и согласуем удобное время.</p>
+            <button class="btn btn-primary" type="submit">Заказать выезд мастера</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </section>
