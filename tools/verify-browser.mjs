@@ -47,6 +47,8 @@ try {
     "header devices below large number",
     "Number.parseFloat(getComputedStyle(document.querySelector('.header-repair-counter strong')).fontSize) >= 30 && document.querySelector('.header-repair-counter small').getBoundingClientRect().top >= document.querySelector('.header-repair-counter strong').getBoundingClientRect().bottom - 1"
   );
+  await expect(cdp, "header logo", "document.querySelector('.brand__logo')?.naturalWidth >= 246");
+  await expect(cdp, "site favicons", "document.querySelector('link[rel=\"icon\"][sizes=\"32x32\"]') !== null && document.querySelector('link[rel=\"apple-touch-icon\"]') !== null");
   await expect(
     cdp,
     "category repair counter",
@@ -87,7 +89,9 @@ try {
   await expect(cdp, "no breadcrumbs", "document.querySelector('.breadcrumbs') === null");
   await expect(cdp, "no available works heading", "document.querySelector('.prices-panel__head h2') === null");
   await expect(cdp, "collapsed services button", "document.querySelector('.expand-services')?.textContent.includes('Раскройте')");
-  await expect(cdp, "contact block present", "document.querySelector('.contact-section .contact-form') !== null && document.querySelector('.map-frame') !== null");
+  await expect(cdp, "contact block present", "document.querySelector('.contact-section .contact-form') !== null && document.querySelector('[data-service-map]') !== null");
+  await waitFor(cdp, "document.querySelectorAll('.service-map .leaflet-marker-icon').length === 2", 12000);
+  await expect(cdp, "two service markers", "document.querySelectorAll('.service-map .leaflet-marker-icon').length === 2");
   await expect(cdp, "brand counter present", "document.querySelector('[data-brand-counter-value]') !== null");
   await expect(cdp, "brand counter spans selector", "document.querySelector('.selection-shell > .brand-counter') !== null && document.querySelector('.selection-shell__main .catalog-controls') !== null");
   await expect(cdp, "brand counter blue", "getComputedStyle(document.querySelector('.selection-shell .brand-counter')).backgroundImage !== 'none' && getComputedStyle(document.querySelector('[data-brand-counter-value]')).color === 'rgb(255, 255, 255)'");
@@ -182,7 +186,7 @@ try {
   await expect(cdp, "home mobile no body overflow", "document.documentElement.scrollWidth <= window.innerWidth + 2");
   await expect(cdp, "mobile business shortcut", "getComputedStyle(document.querySelector('.header-b2b')).display !== 'none' && document.querySelector('.header-b2b').getBoundingClientRect().top >= document.querySelector('.site-header__inner').getBoundingClientRect().bottom && document.querySelector('.header-b2b').getBoundingClientRect().bottom <= document.querySelector('.site-header').getBoundingClientRect().bottom");
   await expect(cdp, "mobile header counter does not overlap booking", "document.querySelector('.header-repair-counter').getBoundingClientRect().right <= document.querySelector('.site-header .btn-primary').getBoundingClientRect().left + 1");
-  await expect(cdp, "mobile contacts lead", "document.querySelector('.contact-lines--lead').getBoundingClientRect().top < document.querySelector('.contact-head__text').getBoundingClientRect().top && Number.parseFloat(getComputedStyle(document.querySelector('.contact-lines--lead a')).fontSize) >= 20");
+  await expect(cdp, "mobile contacts lead", "document.querySelector('.contact-lines--lead').getBoundingClientRect().top < document.querySelector('.contact-head__text').getBoundingClientRect().top && Number.parseFloat(getComputedStyle(document.querySelector('.contact-lines--lead a')).fontSize) >= 27");
   await expect(cdp, "light hero image remains visible", "getComputedStyle(document.querySelector('.light-hero__media img')).display !== 'none'");
   await expect(cdp, "mobile onsite action full row", "document.querySelector('.hero-action-bar__onsite').getBoundingClientRect().width > document.querySelector('.hero-action-bar__primary').getBoundingClientRect().width * 1.8");
   await expect(cdp, "mobile onsite order", "document.querySelector('.onsite-media').getBoundingClientRect().top < document.querySelector('.onsite-form').getBoundingClientRect().top");
@@ -206,6 +210,9 @@ try {
     "getComputedStyle(document.querySelector('.platform-rating--yandex'), '::before').content.includes('Яндекс') && getComputedStyle(document.querySelector('.platform-rating--twogis'), '::before').content.includes('2ГИС')"
   );
   await expect(cdp, "desktop form and map aligned", "Math.abs(document.querySelector('.contact-form').getBoundingClientRect().height - document.querySelector('.contact-card').getBoundingClientRect().height) <= 2");
+  await expect(cdp, "desktop contact details enlarged", "Number.parseFloat(getComputedStyle(document.querySelector('.contact-lines--lead a')).fontSize) >= 34 && Number.parseFloat(getComputedStyle(document.querySelector('.contact-lines--lead a:last-child')).fontSize) >= 24");
+  await hoverCenter(cdp, ".header-b2b");
+  await expect(cdp, "business hover contrast", "getComputedStyle(document.querySelector('.header-b2b')).backgroundColor === 'rgb(255, 255, 255)' && getComputedStyle(document.querySelector('.header-b2b')).color === 'rgb(3, 105, 161)'");
   await expect(cdp, "gray footer with white text", "getComputedStyle(document.querySelector('.footer')).backgroundColor === 'rgb(71, 85, 105)' && getComputedStyle(document.querySelector('.footer__inner')).color === 'rgb(255, 255, 255)'");
   await navigate(cdp, `${baseUrl}/b2b/`);
   await expect(cdp, "b2b page rendered", "document.body.classList.contains('b2b-page') && document.querySelectorAll('.b2b-services article').length === 4");
@@ -357,6 +364,26 @@ async function clickCenter(cdp, selector) {
     button: "left",
     clickCount: 1,
   });
+}
+
+async function hoverCenter(cdp, selector) {
+  const result = await cdp.eval(`(() => {
+    const element = document.querySelector(${JSON.stringify(selector)});
+    if (!element) return null;
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  })()`);
+  const point = result.result.value;
+  if (!point) {
+    failures.push(`hover target missing: ${selector}`);
+    return;
+  }
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseMoved",
+    x: point.x,
+    y: point.y,
+  });
+  await delay(250);
 }
 
 function delay(ms) {

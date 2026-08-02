@@ -13,8 +13,6 @@ const twoGisUrl = "https://2gis.ru/komsomolsk-on-amur/firm/70000001053887975";
 const twoGisSecondUrl = "https://2gis.ru/komsomolsk-on-amur/firm/70000001048911527";
 const googleUrl =
   "https://www.google.com/search?q=%D0%A1%D0%B5%D1%80%D0%B2%D0%B8%D1%81+101+%D0%A0%D0%B5%D0%BC%D0%BE%D0%BD%D1%82+%D0%BD%D0%BE%D1%83%D1%82%D0%B1%D1%83%D0%BA%D0%BE%D0%B2+%D0%B8%D0%B3%D1%80%D0%BE%D0%B2%D1%8B%D1%85+%D0%BF%D1%80%D0%B8%D1%81%D1%82%D0%B0%D0%B2%D0%BE%D0%BA+%D1%82%D0%B5%D0%BB%D0%B5%D1%84%D0%BE%D0%BD%D0%BE%D0%B2";
-const mapEmbedUrl =
-  "https://yandex.ru/map-widget/v1/?ll=137.026408%2C50.568069&mode=search&oid=27521144258&ol=biz&z=12";
 const statusWidgetUrl = "https://app.helloclient.by/check.html#126833";
 
 const categoryMeta = {
@@ -202,6 +200,10 @@ function layout({ root, page, title, description, body, state }) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHTML(title)}</title>
   <meta name="description" content="${escapeHTML(description)}">
+  <link rel="icon" type="image/png" sizes="32x32" href="${root}/assets/branding/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="${root}/assets/branding/favicon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="${root}/assets/branding/apple-touch-icon.png">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="${root}/styles.css">
   <link rel="stylesheet" href="${root}/styles-10107.css">
 ${homeStyles}  <link rel="stylesheet" href="${root}/styles-10109.css">
@@ -213,6 +215,7 @@ ${body}
 </main>
 ${footer(root)}
 <script id="page-state" type="application/json">${JSON.stringify(state)}</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="${root}/scripts/app.js" defer></script>
 </body>
 </html>
@@ -223,9 +226,8 @@ function header(root) {
   return `<header class="site-header">
   <div class="container site-header__inner">
     <a class="brand" href="${root}/index.html" aria-label="Сервис 101">
-      <span class="brand__mark">101</span>
-      <span>
-        <span class="brand__name">СЕРВИС 101</span>
+      <span class="brand__identity">
+        <img class="brand__logo" src="${root}/assets/branding/logo.svg" alt="Сервис 101" width="246" height="42">
         <span class="brand__city">Комсомольск-на-Амуре</span>
       </span>
     </a>
@@ -569,11 +571,21 @@ function contactBody(root) {
             <span>Ежедневно 10:00-19:00</span>
           </a>
         </div>
-        <iframe class="map-frame" title="Сервис 101 на карте" src="${mapEmbedUrl}" loading="lazy"></iframe>
+        ${serviceMapMarkup()}
       </div>
     </div>
   </div>
 </section>`;
+}
+
+function serviceMapMarkup() {
+  return `<div class="map-frame service-map" data-service-map aria-label="Филиалы Сервиса 101 на карте">
+    <div class="service-map__fallback">
+      <strong>Два филиала Сервиса 101</strong>
+      <a href="https://yandex.ru/maps/?text=Комсомольск-на-Амуре%2C%20Вокзальная%2C%2047" target="_blank" rel="noreferrer">Вокзальная, 47</a>
+      <a href="https://yandex.ru/maps/?text=Комсомольск-на-Амуре%2C%20Орехова%2C%2054" target="_blank" rel="noreferrer">Орехова, 54</a>
+    </div>
+  </div>`;
 }
 
 function loaderBody(title) {

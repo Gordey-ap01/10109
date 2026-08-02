@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ремонт техники для бизнеса | Сервис 101</title>
   <meta name="description" content="Обслуживание офисной и производственной техники для компаний Комсомольска-на-Амуре: выезд, диагностика, ремонт и отчётные документы.">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/branding/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="../assets/branding/favicon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/branding/apple-touch-icon.png">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="../styles.css">
   <link rel="stylesheet" href="../styles-10107.css">
   <link rel="stylesheet" href="../styles-10109.css">
@@ -13,9 +17,8 @@
 <header class="site-header">
   <div class="container site-header__inner">
     <a class="brand" href="../index.html" aria-label="Сервис 101">
-      <span class="brand__mark">101</span>
-      <span>
-        <span class="brand__name">СЕРВИС 101</span>
+      <span class="brand__identity">
+        <img class="brand__logo" src="../assets/branding/logo.svg" alt="Сервис 101" width="246" height="42">
         <span class="brand__city">Комсомольск-на-Амуре</span>
       </span>
     </a>
@@ -159,7 +162,13 @@
             <span>Ежедневно 10:00-19:00</span>
           </a>
         </div>
-        <iframe class="map-frame" title="Сервис 101 на карте" src="https://yandex.ru/map-widget/v1/?ll=137.026408%2C50.568069&mode=search&oid=27521144258&ol=biz&z=12" loading="lazy"></iframe>
+        <div class="map-frame service-map" data-service-map aria-label="Филиалы Сервиса 101 на карте">
+          <div class="service-map__fallback">
+            <strong>Два филиала Сервиса 101</strong>
+            <a href="https://yandex.ru/maps/?text=Комсомольск-на-Амуре%2C%20Вокзальная%2C%2047" target="_blank" rel="noreferrer">Вокзальная, 47</a>
+            <a href="https://yandex.ru/maps/?text=Комсомольск-на-Амуре%2C%20Орехова%2C%2054" target="_blank" rel="noreferrer">Орехова, 54</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -181,6 +190,7 @@
   </div>
 </footer>
 <script id="page-state" type="application/json">{"page":"b2b","root":".."}</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="../scripts/app.js" defer></script>
 </body>
 </html>
