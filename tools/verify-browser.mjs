@@ -321,10 +321,20 @@ async function waitFor(cdp, expression, timeoutMs = 8000) {
 }
 
 async function clickCenter(cdp, selector) {
+  const found = await cdp.eval(`(() => {
+    const element = document.querySelector(${JSON.stringify(selector)});
+    if (!element) return false;
+    element.scrollIntoView({ block: "center", inline: "center" });
+    return true;
+  })()`);
+  if (!found.result.value) {
+    failures.push(`click target missing: ${selector}`);
+    return;
+  }
+  await delay(400);
   const result = await cdp.eval(`(() => {
     const element = document.querySelector(${JSON.stringify(selector)});
     if (!element) return null;
-    element.scrollIntoView({ block: "center", inline: "center" });
     const rect = element.getBoundingClientRect();
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   })()`);
