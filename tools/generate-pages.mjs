@@ -14,6 +14,8 @@ const twoGisSecondUrl = "https://2gis.ru/komsomolsk-on-amur/firm/700000010489115
 const googleUrl =
   "https://www.google.com/search?q=%D0%A1%D0%B5%D1%80%D0%B2%D0%B8%D1%81+101+%D0%A0%D0%B5%D0%BC%D0%BE%D0%BD%D1%82+%D0%BD%D0%BE%D1%83%D1%82%D0%B1%D1%83%D0%BA%D0%BE%D0%B2+%D0%B8%D0%B3%D1%80%D0%BE%D0%B2%D1%8B%D1%85+%D0%BF%D1%80%D0%B8%D1%81%D1%82%D0%B0%D0%B2%D0%BE%D0%BA+%D1%82%D0%B5%D0%BB%D0%B5%D1%84%D0%BE%D0%BD%D0%BE%D0%B2";
 const statusWidgetUrl = "https://app.helloclient.by/check.html#126833";
+const serviceMapEmbedUrl =
+  "https://yandex.ru/map-widget/v1/?ll=137.026378%2C50.567777&mode=routes&rtext=50.5460458%2C136.9882456~50.5895089%2C137.0645113&rtt=auto&z=12";
 
 const categoryMeta = {
   telefony: {
@@ -203,7 +205,6 @@ function layout({ root, page, title, description, body, state }) {
   <link rel="icon" type="image/png" sizes="32x32" href="${root}/assets/branding/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="${root}/assets/branding/favicon-192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="${root}/assets/branding/apple-touch-icon.png">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="${root}/styles.css">
   <link rel="stylesheet" href="${root}/styles-10107.css">
 ${homeStyles}  <link rel="stylesheet" href="${root}/styles-10109.css">
@@ -215,7 +216,6 @@ ${body}
 </main>
 ${footer(root)}
 <script id="page-state" type="application/json">${JSON.stringify(state)}</script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="${root}/scripts/app.js" defer></script>
 </body>
 </html>
@@ -242,7 +242,11 @@ function header(root) {
       <a class="btn btn-primary btn-sm" href="#" data-open-booking>Записаться</a>
     </div>
   </div>
-</header>`;
+</header>
+<a class="mobile-b2b-strip" href="${root}/b2b/index.html">
+  <span>Для бизнеса</span>
+  <span aria-hidden="true">&#8594;</span>
+</a>`;
 }
 
 function footer(root) {
@@ -579,13 +583,7 @@ function contactBody(root) {
 }
 
 function serviceMapMarkup() {
-  return `<div class="map-frame service-map" data-service-map aria-label="Филиалы Сервиса 101 на карте">
-    <div class="service-map__fallback">
-      <strong>Два филиала Сервиса 101</strong>
-      <a href="https://yandex.ru/maps/?text=Комсомольск-на-Амуре%2C%20Вокзальная%2C%2047" target="_blank" rel="noreferrer">Вокзальная, 47</a>
-      <a href="https://yandex.ru/maps/?text=Комсомольск-на-Амуре%2C%20Орехова%2C%2054" target="_blank" rel="noreferrer">Орехова, 54</a>
-    </div>
-  </div>`;
+  return `<iframe class="map-frame service-map" title="Два филиала Сервиса 101 на Яндекс Картах" src="${serviceMapEmbedUrl.replaceAll("&", "&amp;")}" loading="lazy" allowfullscreen></iframe>`;
 }
 
 function loaderBody(title) {

@@ -8,18 +8,8 @@
   let currentServices = [];
   let currentDevice = null;
   let categoryCounterTimer = null;
-  const serviceLocations = [
-    {
-      title: "Вокзальная, 47",
-      coordinates: [50.5460458, 136.9882456],
-      mapUrl: "https://yandex.ru/maps/?text=Комсомольск-на-Амуре%2C%20Вокзальная%2C%2047",
-    },
-    {
-      title: "Орехова, 54",
-      coordinates: [50.5895089, 137.0645113],
-      mapUrl: "https://yandex.ru/maps/?text=Комсомольск-на-Амуре%2C%20Орехова%2C%2054",
-    },
-  ];
+  const serviceMapEmbedUrl =
+    "https://yandex.ru/map-widget/v1/?ll=137.026378%2C50.567777&mode=routes&rtext=50.5460458%2C136.9882456~50.5895089%2C137.0645113&rtt=auto&z=12";
 
   const branches = [
     {
@@ -126,7 +116,6 @@
     initRevivalCounter();
     initLightThemeMotion();
     initGlobalBookingButtons();
-    initServiceMaps();
     loadCatalog();
     if (new URLSearchParams(location.search).has("sent")) {
       setTimeout(() => openBookingModal("sent"), 400);
@@ -352,7 +341,6 @@
     bindHorizontalScroll();
     syncBookingBar();
     startCategoryCounter(activeRecord, options.onsite);
-    initServiceMaps();
   }
 
   function renderTopTabs(activeSlug) {
@@ -592,52 +580,7 @@
   }
 
   function renderServiceMap() {
-    return `<div class="map-frame service-map" data-service-map aria-label="Филиалы Сервиса 101 на карте">
-      <div class="service-map__fallback">
-        <strong>Два филиала Сервиса 101</strong>
-        ${serviceLocations
-          .map(
-            (location) =>
-              `<a href="${location.mapUrl}" target="_blank" rel="noreferrer">${escapeHTML(location.title)}</a>`
-          )
-          .join("")}
-      </div>
-    </div>`;
-  }
-
-  function initServiceMaps() {
-    if (!window.L) return;
-    document.querySelectorAll("[data-service-map]:not([data-map-ready])").forEach((container) => {
-      container.dataset.mapReady = "true";
-      container.replaceChildren();
-
-      const map = window.L.map(container, {
-        scrollWheelZoom: false,
-        zoomControl: true,
-      });
-      window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(map);
-
-      const bounds = [];
-      serviceLocations.forEach((location, index) => {
-        const icon = window.L.divIcon({
-          className: "service-map__pin",
-          html: `<span><b>${index + 1}</b></span>`,
-          iconSize: [44, 50],
-          iconAnchor: [22, 50],
-          popupAnchor: [0, -44],
-        });
-        window.L.marker(location.coordinates, { icon })
-          .addTo(map)
-          .bindPopup(
-            `<strong>Сервис 101</strong><br>${escapeHTML(location.title)}<br><a href="${location.mapUrl}" target="_blank" rel="noreferrer">Открыть маршрут</a>`
-          );
-        bounds.push(location.coordinates);
-      });
-      map.fitBounds(bounds, { padding: [46, 46], maxZoom: 13 });
-    });
+    return `<iframe class="map-frame service-map" title="Два филиала Сервиса 101 на Яндекс Картах" src="${serviceMapEmbedUrl.replaceAll("&", "&amp;")}" loading="lazy" allowfullscreen></iframe>`;
   }
 
   function getServices(activeRecord) {

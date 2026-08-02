@@ -3,6 +3,11 @@
 .site-header,
 .home-page--light .site-header {
   backdrop-filter: none;
+  z-index: 100;
+}
+
+.mobile-b2b-strip {
+  display: none;
 }
 
 .header-b2b {
@@ -277,6 +282,10 @@
 
 .contact-card {
   grid-template-rows: auto minmax(360px, 1fr);
+  position: relative;
+  z-index: 0;
+  isolation: isolate;
+  overflow: hidden;
 }
 
 .contact-card .map-frame {
@@ -284,64 +293,15 @@
 }
 
 .service-map {
+  display: block;
   position: relative;
+  z-index: 0;
+  width: 100%;
   min-height: 420px;
+  border: 0;
   overflow: hidden;
   background: #e0f2fe;
   font-family: inherit;
-}
-
-.service-map__fallback {
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 12px;
-  height: 100%;
-  min-height: 420px;
-  padding: 32px;
-  text-align: center;
-}
-
-.service-map__fallback a {
-  color: #0369a1;
-  font-weight: 750;
-}
-
-.service-map__pin {
-  border: 0;
-  background: transparent;
-}
-
-.service-map__pin > span {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border: 3px solid #fff;
-  border-radius: 50% 50% 50% 0;
-  background: linear-gradient(135deg, #0369a1, #0ea5e9);
-  box-shadow: 0 8px 22px rgba(3, 105, 161, 0.34);
-  transform: rotate(-45deg);
-}
-
-.service-map__pin b {
-  color: #fff;
-  font-size: 15px;
-  transform: rotate(45deg);
-}
-
-.service-map .leaflet-popup-content-wrapper {
-  border-radius: 6px;
-}
-
-.service-map .leaflet-popup-content {
-  font-family: inherit;
-  line-height: 1.5;
-}
-
-.service-map .leaflet-popup-content a {
-  color: #0284c7;
-  font-weight: 700;
 }
 
 /* Catalog pricing */
@@ -612,11 +572,11 @@
 
 @media (max-width: 760px) {
   body {
-    padding-top: 118px;
+    padding-top: 74px;
   }
 
   .site-header {
-    min-height: 118px;
+    min-height: 74px;
   }
 
   .site-header__inner {
@@ -662,19 +622,26 @@
   }
 
   .site-header .header-b2b {
-    position: absolute;
-    z-index: 95;
-    top: 78px;
-    left: 12px;
-    display: inline-flex !important;
+    display: none !important;
+  }
+
+  .mobile-b2b-strip {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    width: 100%;
     min-height: 32px;
-    border: 1px solid rgba(255, 255, 255, 0.74);
-    border-radius: 4px;
-    padding: 7px 12px;
-    background: #0284c7;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-bottom: 1px solid rgba(3, 105, 161, 0.22);
+    padding: 7px 14px;
+    background: linear-gradient(90deg, #0284c7, #0369a1);
     color: #fff;
-    font-size: 11px;
-    box-shadow: 0 8px 22px rgba(3, 105, 161, 0.22);
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.2;
+    text-decoration: none;
   }
 
   .home-page--light .hero__inner {

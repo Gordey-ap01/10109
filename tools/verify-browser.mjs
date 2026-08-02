@@ -89,9 +89,9 @@ try {
   await expect(cdp, "no breadcrumbs", "document.querySelector('.breadcrumbs') === null");
   await expect(cdp, "no available works heading", "document.querySelector('.prices-panel__head h2') === null");
   await expect(cdp, "collapsed services button", "document.querySelector('.expand-services')?.textContent.includes('Раскройте')");
-  await expect(cdp, "contact block present", "document.querySelector('.contact-section .contact-form') !== null && document.querySelector('[data-service-map]') !== null");
-  await waitFor(cdp, "document.querySelectorAll('.service-map .leaflet-marker-icon').length === 2", 12000);
-  await expect(cdp, "two service markers", "document.querySelectorAll('.service-map .leaflet-marker-icon').length === 2");
+  await expect(cdp, "contact block present", "document.querySelector('.contact-section .contact-form') !== null && document.querySelector('iframe.service-map') !== null");
+  await expect(cdp, "Yandex two-branch route map", "document.querySelector('iframe.service-map')?.src.includes('yandex.ru/map-widget') && document.querySelector('iframe.service-map')?.src.includes('mode=routes') && document.querySelector('iframe.service-map')?.src.includes('rtext=50.5460458') && document.querySelector('iframe.service-map')?.src.includes('50.5895089')");
+  await expect(cdp, "OpenStreetMap removed", "document.querySelector('link[href*=" + '"openstreetmap"' + "]') === null && document.querySelector('script[src*=" + '"leaflet"' + "]') === null && !document.documentElement.innerHTML.includes('tile.openstreetmap.org')");
   await expect(cdp, "brand counter present", "document.querySelector('[data-brand-counter-value]') !== null");
   await expect(cdp, "brand counter spans selector", "document.querySelector('.selection-shell > .brand-counter') !== null && document.querySelector('.selection-shell__main .catalog-controls') !== null");
   await expect(cdp, "brand counter blue", "getComputedStyle(document.querySelector('.selection-shell .brand-counter')).backgroundImage !== 'none' && getComputedStyle(document.querySelector('[data-brand-counter-value]')).color === 'rgb(255, 255, 255)'");
@@ -184,12 +184,18 @@ try {
   if (revivalGrown.result.value <= revivalReady.result.value) failures.push("revival counter keeps growing");
   await waitFor(cdp, "document.querySelector('.light-hero__media img')?.naturalWidth > 1000");
   await expect(cdp, "home mobile no body overflow", "document.documentElement.scrollWidth <= window.innerWidth + 2");
-  await expect(cdp, "mobile business shortcut", "getComputedStyle(document.querySelector('.header-b2b')).display !== 'none' && document.querySelector('.header-b2b').getBoundingClientRect().top >= document.querySelector('.site-header__inner').getBoundingClientRect().bottom && document.querySelector('.header-b2b').getBoundingClientRect().bottom <= document.querySelector('.site-header').getBoundingClientRect().bottom");
+  await expect(cdp, "mobile business shortcut", "getComputedStyle(document.querySelector('.site-header .header-b2b')).display === 'none' && getComputedStyle(document.querySelector('.mobile-b2b-strip')).display === 'flex' && getComputedStyle(document.querySelector('.mobile-b2b-strip')).position !== 'fixed' && document.querySelector('.site-header').nextElementSibling?.matches('.mobile-b2b-strip') && document.querySelector('.mobile-b2b-strip').getBoundingClientRect().width >= document.documentElement.clientWidth - 1");
   await expect(cdp, "mobile header counter does not overlap booking", "document.querySelector('.header-repair-counter').getBoundingClientRect().right <= document.querySelector('.site-header .btn-primary').getBoundingClientRect().left + 1");
   await expect(cdp, "mobile contacts lead", "document.querySelector('.contact-lines--lead').getBoundingClientRect().top < document.querySelector('.contact-head__text').getBoundingClientRect().top && Number.parseFloat(getComputedStyle(document.querySelector('.contact-lines--lead a')).fontSize) >= 27");
   await expect(cdp, "light hero image remains visible", "getComputedStyle(document.querySelector('.light-hero__media img')).display !== 'none'");
   await expect(cdp, "mobile onsite action full row", "document.querySelector('.hero-action-bar__onsite').getBoundingClientRect().width > document.querySelector('.hero-action-bar__primary').getBoundingClientRect().width * 1.8");
   await expect(cdp, "mobile onsite order", "document.querySelector('.onsite-media').getBoundingClientRect().top < document.querySelector('.onsite-form').getBoundingClientRect().top");
+  await cdp.eval("window.scrollTo(0, 500)");
+  await delay(250);
+  await expect(cdp, "mobile business shortcut scrolls away", "document.querySelector('.mobile-b2b-strip').getBoundingClientRect().bottom < 0 && Math.abs(document.querySelector('.site-header').getBoundingClientRect().top) <= 1");
+  await cdp.eval("document.querySelector('.service-map').scrollIntoView({ block: 'start' })");
+  await delay(300);
+  await expect(cdp, "map stays behind fixed header", "document.elementFromPoint(Math.round(innerWidth / 2), 20)?.closest('.site-header') !== null && Number.parseInt(getComputedStyle(document.querySelector('.site-header')).zIndex, 10) > Number.parseInt(getComputedStyle(document.querySelector('.service-map')).zIndex || '0', 10)");
 
   await setViewport(cdp, 320, 900, true);
   await navigate(cdp, `${baseUrl}/`);
