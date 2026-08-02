@@ -78,6 +78,39 @@
     },
   };
 
+  const deviceInfoCopy = {
+    telefony: {
+      title: "Перед ремонтом телефона",
+      text: "Если устройство включается, сохраните важные данные. Пароль блокировки можно сообщить мастеру при приёмке только для проверки выполненной работы.",
+      items: ["Возьмите устройство без чехла", "После влаги не ставьте телефон на зарядку", "Для точной цены назовите полную модель"],
+    },
+    noutbuki: {
+      title: "Что взять вместе с ноутбуком",
+      text: "Принесите штатный блок питания, особенно если ноутбук не заряжается, выключается или работает нестабильно под нагрузкой.",
+      items: ["Сохраните важные рабочие файлы", "Опишите, после чего появилась неисправность", "Для апгрейда расскажите, какие задачи стали медленными"],
+    },
+    kompyutery: {
+      title: "Перед диагностикой компьютера",
+      text: "Сообщите конфигурацию и симптомы: нет изображения, перезагрузки, шум, перегрев или медленная работа. Это поможет сразу назначить нужного мастера.",
+      items: ["Периферию привозить не обязательно", "При проблемах с питанием возьмите кабель", "Для выезда укажите адрес и удобное время"],
+    },
+    pristavki: {
+      title: "Перед ремонтом приставки",
+      text: "Возьмите консоль и кабель питания. Если проблема возникает только в игре или с определённым геймпадом, принесите их вместе с приставкой.",
+      items: ["Не прогревайте плату самостоятельно", "Сообщите об ошибках на экране", "После перегрева выключите консоль до диагностики"],
+    },
+    videokarty: {
+      title: "Что сообщить мастеру по видеокарте",
+      text: "Укажите модель блока питания и симптомы: артефакты, чёрный экран, вылеты драйвера, перегрев или шум вентиляторов.",
+      items: ["Не используйте прогрев в духовке", "Сохраните фото или видео артефактов", "Упаковка должна защищать плату от изгиба"],
+    },
+    gejmpady: {
+      title: "Перед ремонтом геймпада",
+      text: "Опишите проблему со стиками, кнопками, триггерами, зарядкой или подключением. При нестабильной зарядке возьмите используемый кабель.",
+      items: ["Не наносите смазку внутрь стиков", "Сообщите модель приставки", "После ремонта проверим контроллер на стенде"],
+    },
+  };
+
   document.addEventListener("DOMContentLoaded", () => {
     initHeaderCounter();
     initRevivalCounter();
@@ -248,7 +281,7 @@
             <div class="selection-shell">
               <div class="selection-shell__main">
                 <div class="catalog-tabs" data-horizontal-scroll>
-                  ${renderTopTabs(activeRecord.categorySlug, options.onsite)}
+                  ${renderTopTabs(activeRecord.categorySlug)}
                 </div>
                 <div class="catalog-controls">
                   <div>
@@ -292,13 +325,10 @@
           <div class="container">
             <div class="device-workspace">
               ${renderDeviceCard(activeRecord, category, options)}
-              ${renderPricePanel(activeRecord, category)}
-            </div>
-
-            <div class="note-box">
-              Стоимость указана за работу без детали. Полная цена с запчастью подтверждается мастером после диагностики или уточнения модели.
-              Можно выбрать несколько услуг и отправить одну заявку.
-              Сразу с вами будет нужный мастер!
+              <div class="prices-column">
+                ${renderPricePanel(activeRecord, category)}
+                ${renderDeviceInfo(activeRecord.categorySlug)}
+              </div>
             </div>
           </div>
         </section>
@@ -313,17 +343,17 @@
     startCategoryCounter(activeRecord, options.onsite);
   }
 
-  function renderTopTabs(activeSlug, onsite) {
+  function renderTopTabs(activeSlug) {
     const tabs = [
       { slug: "telefony", label: "Телефоны", href: `${root}/remont/telefony/index.html` },
       { slug: "noutbuki", label: "Ноутбуки", href: `${root}/remont/noutbuki/index.html` },
       { slug: "kompyutery", label: "Компьютеры", href: `${root}/remont/kompyutery/index.html` },
-      { slug: "onsite", label: "Выездной ремонт", href: `${root}/remont/vyezdnoj-remont/index.html` },
+      { slug: "pristavki", label: "Приставки и консоли", href: `${root}/remont/pristavki/index.html` },
     ];
     return tabs
       .map((tab) => {
-        const active = tab.slug === activeSlug || (onsite && tab.slug === "onsite");
-        const visualSlug = tab.slug === "onsite" ? "vyezd" : tab.slug;
+        const active = tab.slug === activeSlug;
+        const visualSlug = tab.slug;
         return `<a class="tab tab--${visualSlug} ${active ? "active" : ""}" href="${tab.href}">
           <span class="tab-icon tab-icon--${visualSlug}" aria-hidden="true">${tabIcon(visualSlug)}</span>
           <span>${tab.label}</span>
@@ -337,7 +367,7 @@
       telefony: phoneIcon,
       noutbuki: laptopIcon,
       kompyutery: pcIcon,
-      vyezd: pcIcon,
+      pristavki: consoleIcon,
     };
     return (icons[slug] || pcIcon)();
   }
@@ -388,8 +418,7 @@
         </div>
         <div class="price-list">
           <div class="price-list__head" aria-hidden="true">
-            <span>Работа</span>
-            <span>Срок</span>
+            <span>Работа и срок</span>
             <span>Средняя цена с деталью</span>
             <span></span>
           </div>
@@ -411,17 +440,40 @@
     return `
       <div class="price-row ${selected ? "selected" : ""}" data-service-id="${escapeAttr(service.id)}">
         <div class="price-row__name">
-          ${escapeHTML(service.position)}
-          ${service.badge ? `<span class="badge">${escapeHTML(service.badge)}</span>` : ""}
+          <div class="price-row__title">
+            ${escapeHTML(service.position)}
+            ${service.badge ? `<span class="badge">${escapeHTML(service.badge)}</span>` : ""}
+          </div>
+          <div class="price-row__time">${escapeHTML(service.time || "по согласованию")}</div>
           <div class="price-row__desc">${escapeHTML(service.description)}</div>
         </div>
-        <div class="price-row__time">${escapeHTML(service.time || "по согласованию")}</div>
         <div class="price-row__price ${free ? "free" : ""}">
           <span class="price-row__caption">С деталью</span>
           ${escapeHTML(service.averageCost)}
         </div>
         <button class="select-service" type="button">${selected ? "Выбрано" : "Выбрать"}</button>
       </div>
+    `;
+  }
+
+  function renderDeviceInfo(categorySlug) {
+    const info = deviceInfoCopy[categorySlug] || {
+      title: "Перед визитом в сервис",
+      text: "Расскажите мастеру, что произошло с устройством и после чего появилась неисправность.",
+      items: ["Согласуем состав работ", "Назовём срок после диагностики", "Предоставим гарантию на ремонт"],
+    };
+    return `
+      <aside class="device-info" aria-label="Полезная информация перед ремонтом">
+        <div class="device-info__copy">
+          <p class="eyebrow">Важно знать</p>
+          <h3>${escapeHTML(info.title)}</h3>
+          <p>${escapeHTML(info.text)}</p>
+        </div>
+        <ul>
+          ${info.items.map((item) => `<li>${escapeHTML(item)}</li>`).join("")}
+        </ul>
+        <p class="device-info__price">Стоимость работы указана без детали. Полную цену с запчастью мастер подтвердит после диагностики или уточнения модели. Можно выбрать несколько услуг и отправить одну заявку — с вами сразу свяжется нужный мастер.</p>
+      </aside>
     `;
   }
 
@@ -472,10 +524,16 @@
     return `
       <section id="contacts" class="section section-gray contact-section">
         <div class="container">
-          <div class="section-head">
-            <p class="eyebrow">Контакты</p>
-            <h2 class="section-title">Остались вопросы? Свяжитесь - бесплатная консультация!</h2>
-            <p class="section-text">Филиалы работают ежедневно с 10:00 до 19:00 без перерывов и выходных. Можно приехать в сервис или оставить заявку на выезд мастера.</p>
+          <div class="contact-head">
+            <div class="section-head">
+              <p class="eyebrow">Контакты</p>
+              <h2 class="section-title">Остались вопросы? Свяжитесь - бесплатная консультация!</h2>
+            </div>
+            <div class="contact-lines contact-lines--lead" aria-label="Телефон и электронная почта">
+              <a href="tel:+79940760101">+7 (994) 076-01-01</a>
+              <a href="mailto:101kms@mail.ru">101kms@mail.ru</a>
+            </div>
+            <p class="section-text contact-head__text">Филиалы работают ежедневно с 10:00 до 19:00 без перерывов и выходных. Можно приехать в сервис или оставить заявку на выезд мастера.</p>
           </div>
           <div class="contact-grid">
             <form class="contact-form" action="https://formsubmit.co/shineteatr@gmail.com" method="POST">
@@ -512,10 +570,6 @@
                   <strong>ул. Орехова, 54</strong>
                   <span>Ежедневно 10:00-19:00</span>
                 </a>
-              </div>
-              <div class="contact-lines">
-                <a href="tel:+79940760101">+7 (994) 076-01-01</a>
-                <a href="mailto:101kms@mail.ru">101kms@mail.ru</a>
               </div>
               <iframe class="map-frame" title="Сервис 101 на карте" src="${mapEmbedUrl}" loading="lazy"></iframe>
             </div>

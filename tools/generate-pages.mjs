@@ -95,18 +95,21 @@ ensureDir(path.join(projectRoot, "data"));
 ensureDir(path.join(projectRoot, "scripts"));
 writeFile(path.join(projectRoot, "data", "services.csv"), toCSV(records));
 
-writeFile(
-  path.join(projectRoot, "index.html"),
-  layout({
-    root: ".",
-    page: "home",
-    title: "Сервис 101 - ремонт техники в Комсомольске-на-Амуре",
-    description:
-      "Сервис 101: ремонт телефонов, ноутбуков, компьютеров, приставок, видеокарт и геймпадов в Комсомольске-на-Амуре.",
-    body: homeBody(),
-    state: { page: "home", root: "." },
-  })
-);
+const homePath = path.join(projectRoot, "index.html");
+if (!fs.existsSync(homePath)) {
+  writeFile(
+    homePath,
+    layout({
+      root: ".",
+      page: "home",
+      title: "Сервис 101 - ремонт техники в Комсомольске-на-Амуре",
+      description:
+        "Сервис 101: ремонт телефонов, ноутбуков, компьютеров, приставок, видеокарт и геймпадов в Комсомольске-на-Амуре.",
+      body: homeBody(),
+      state: { page: "home", root: "." },
+    })
+  );
+}
 
 for (const category of catalog.categories) {
   const categoryDir = path.join(projectRoot, "remont", category.id);
@@ -165,18 +168,21 @@ writeFile(
 
 const b2bDir = path.join(projectRoot, "b2b");
 ensureDir(b2bDir);
-writeFile(
-  path.join(b2bDir, "index.html"),
-  layout({
-    root: "..",
-    page: "b2b",
-    title: "Ремонт техники для бизнеса | Сервис 101",
-    description:
-      "Обслуживание офисной и производственной техники для компаний Комсомольска-на-Амуре: выезд, диагностика, ремонт и отчётные документы.",
-    body: b2bBody(),
-    state: { page: "b2b", root: ".." },
-  })
-);
+const b2bPath = path.join(b2bDir, "index.html");
+if (!fs.existsSync(b2bPath)) {
+  writeFile(
+    b2bPath,
+    layout({
+      root: "..",
+      page: "b2b",
+      title: "Ремонт техники для бизнеса | Сервис 101",
+      description:
+        "Обслуживание офисной и производственной техники для компаний Комсомольска-на-Амуре: выезд, диагностика, ремонт и отчётные документы.",
+      body: b2bBody(),
+      state: { page: "b2b", root: ".." },
+    })
+  );
+}
 
 console.log(`Generated ${records.length} CSV rows and static pages in ${projectRoot}`);
 
@@ -188,6 +194,7 @@ function resolveServices(services) {
 function layout({ root, page, title, description, body, state }) {
   const bodyClass =
     page === "home" ? "home-page home-page--light" : page === "b2b" ? "inner-page b2b-page" : "inner-page";
+  const homeStyles = page === "home" ? `  <link rel="stylesheet" href="${root}/styles-10108.css">\n` : "";
   return `<!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -197,6 +204,7 @@ function layout({ root, page, title, description, body, state }) {
   <meta name="description" content="${escapeHTML(description)}">
   <link rel="stylesheet" href="${root}/styles.css">
   <link rel="stylesheet" href="${root}/styles-10107.css">
+${homeStyles}  <link rel="stylesheet" href="${root}/styles-10109.css">
 </head>
 <body class="${bodyClass}">
 ${header(root)}
@@ -287,8 +295,8 @@ function homeBody() {
       </div>
       <div class="hero-trust" aria-label="Преимущества сервиса">
         <span><strong>2-3 часа</strong> типовой ремонт</span>
-        <span><strong>2 филиала</strong> ежедневно</span>
         <span><strong>до 12 мес</strong> гарантия</span>
+        <span><strong>с 2016 г.</strong> работаем</span>
       </div>
     </div>
   </div>
@@ -369,7 +377,7 @@ function categoryCard(category) {
       <span class="cat-title">${escapeHTML(category.name)}</span>
       <span class="cat-text">${escapeHTML(meta.text)}</span>
     </span>
-    <span class="cat-open">Открыть <span aria-hidden="true">→</span></span>
+    <span class="cat-open">Выбрать <span aria-hidden="true">→</span></span>
   </a>`;
 }
 
@@ -434,7 +442,7 @@ function b2bBody() {
   <div class="container b2b-hero__inner">
     <div>
       <p class="eyebrow">Сервис 101 для бизнеса</p>
-      <h1>Техника работает.<br>Команда не простаивает.</h1>
+      <h1>Ваш бизнес работает<br>с Сервисом 101</h1>
       <p>Обслуживаем компьютеры, ноутбуки, телефоны, кассовое и периферийное оборудование компаний Комсомольска-на-Амуре.</p>
       <div class="b2b-hero__actions">
         <a class="btn btn-primary" href="#b2b-request">Обсудить обслуживание</a>
@@ -514,10 +522,16 @@ ${contactBody("..")}`;
 function contactBody(root) {
   return `<section id="contacts" class="section section-gray contact-section">
   <div class="container">
-    <div class="section-head">
-      <p class="eyebrow">Контакты</p>
-      <h2 class="section-title">Остались вопросы? Свяжитесь - бесплатная консультация!</h2>
-      <p class="section-text">Два филиала в Комсомольске-на-Амуре работают ежедневно с 10:00 до 19:00 без перерывов и выходных.</p>
+    <div class="contact-head">
+      <div class="section-head">
+        <p class="eyebrow">Контакты</p>
+        <h2 class="section-title">Остались вопросы? Свяжитесь - бесплатная консультация!</h2>
+      </div>
+      <div class="contact-lines contact-lines--lead" aria-label="Телефон и электронная почта">
+        <a href="tel:+79940760101">+7 (994) 076-01-01</a>
+        <a href="mailto:101kms@mail.ru">101kms@mail.ru</a>
+      </div>
+      <p class="section-text contact-head__text">Два филиала в Комсомольске-на-Амуре работают ежедневно с 10:00 до 19:00 без перерывов и выходных.</p>
     </div>
     <div class="contact-grid">
       <form class="contact-form" action="https://formsubmit.co/shineteatr@gmail.com" method="POST">
@@ -554,10 +568,6 @@ function contactBody(root) {
             <strong>ул. Орехова, 54</strong>
             <span>Ежедневно 10:00-19:00</span>
           </a>
-        </div>
-        <div class="contact-lines">
-          <a href="tel:+79940760101">+7 (994) 076-01-01</a>
-          <a href="mailto:101kms@mail.ru">101kms@mail.ru</a>
         </div>
         <iframe class="map-frame" title="Сервис 101 на карте" src="${mapEmbedUrl}" loading="lazy"></iframe>
       </div>

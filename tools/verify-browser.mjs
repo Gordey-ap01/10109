@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 const chrome = "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const debugPort = 9333;
 const baseUrl = process.argv[2] || "http://127.0.0.1:8082";
-const userDataDir = path.join(os.tmpdir(), `service-10108-chrome-${Date.now()}`);
+const userDataDir = path.join(os.tmpdir(), `service-10109-chrome-${Date.now()}`);
 const failures = [];
 const consoleErrors = [];
 
@@ -70,6 +70,8 @@ try {
   await expect(cdp, "desktop price rows", "document.querySelectorAll('.price-row').length >= 10");
   await expect(cdp, "average price with part column", "document.querySelector('.price-list__head')?.textContent.includes('Средняя цена с деталью')");
   await expect(cdp, "average price populated", "document.querySelector('.price-row__price')?.textContent.includes('После диагностики') && [...document.querySelectorAll('.price-row__price')].some((item) => item.textContent.includes('₽'))");
+  await expect(cdp, "repair time grouped under service", "document.querySelector('.price-row__name .price-row__time') !== null && document.querySelector('.price-row > .price-row__time') === null");
+  await expect(cdp, "price table contained", "document.querySelector('.price-list__head').getBoundingClientRect().right <= document.querySelector('.prices-panel').getBoundingClientRect().right + 1 && [...document.querySelectorAll('.price-row')].every((row) => row.getBoundingClientRect().right <= document.querySelector('.prices-panel').getBoundingClientRect().right + 1)");
   await expect(cdp, "model scroller controls", "document.querySelector('[data-model-scroller].has-overflow') !== null");
   const modelScrollBefore = await cdp.eval("document.querySelector('[data-model-row]')?.scrollLeft || 0");
   await cdp.eval("document.querySelector('.model-scroller__button--next')?.click()");
@@ -77,6 +79,7 @@ try {
   const modelScrollAfter = await cdp.eval("document.querySelector('[data-model-row]')?.scrollLeft || 0");
   if (modelScrollAfter.result.value <= modelScrollBefore.result.value) failures.push("desktop model scroller moves");
   await expect(cdp, "category tabs have icons", "document.querySelectorAll('.catalog-tabs .tab-icon').length >= 4");
+  await expect(cdp, "console category replaces onsite tab", "document.querySelector('.catalog-tabs .tab--pristavki')?.textContent.includes('Приставки и консоли') && !document.querySelector('.catalog-tabs')?.textContent.includes('Выездной ремонт')");
   await expect(cdp, "active category icon present", "document.querySelector('.catalog-tabs .tab.active .tab-icon') !== null");
   await expect(cdp, "device media tags removed", "document.querySelector('.device-media-tags') === null");
   await expect(cdp, "two device facts", "document.querySelectorAll('.device-facts span').length === 2");
@@ -120,6 +123,8 @@ try {
     "document.querySelector('.contact-form')?.action.includes('shineteatr@gmail.com')"
   );
   await expect(cdp, "contact form branch", "document.querySelector('.contact-form [name=\"Филиал\"]') !== null");
+  await expect(cdp, "phone info block", "document.querySelector('.device-info')?.textContent.includes('Перед ремонтом телефона')");
+  await expect(cdp, "contact details promoted", "document.querySelector('.contact-head .contact-lines--lead') !== null && document.querySelector('.contact-head').compareDocumentPosition(document.querySelector('.contact-grid')) & Node.DOCUMENT_POSITION_FOLLOWING");
 
   await setViewport(cdp, 390, 1400, true);
   await navigate(cdp, `${baseUrl}/remont/noutbuki/apple/macbook-pro/`);
@@ -132,11 +137,15 @@ try {
     "document.querySelector('.device-card').getBoundingClientRect().top < document.querySelector('.prices-panel').getBoundingClientRect().top"
   );
   await expect(cdp, "mobile horizontal selector gesture", "getComputedStyle(document.querySelector('[data-horizontal-scroll]')).touchAction === 'pan-x'");
+  await expect(cdp, "mobile model arrows contained", "getComputedStyle(document.querySelector('.model-scroller__button--next')).display === 'none' && document.querySelector('.model-scroller').getBoundingClientRect().right <= document.documentElement.clientWidth + 1");
+  await expect(cdp, "laptop info block", "document.querySelector('.device-info')?.textContent.includes('Что взять вместе с ноутбуком')");
   await cdp.eval("document.querySelectorAll('.price-row .select-service')[1].click()");
   await delay(200);
   await cdp.eval("document.querySelector('.booking-bar button').click()");
   await delay(200);
   await expect(cdp, "onsite branch for laptop", "[...document.querySelectorAll('.branch-card strong')].some((item) => item.textContent.includes('Заказать выезд'))");
+  await expect(cdp, "bright blurred modal", "getComputedStyle(document.querySelector('.modal')).backgroundColor !== 'rgba(2, 6, 23, 0.72)' && getComputedStyle(document.querySelector('.modal')).backdropFilter.includes('blur')");
+  await expect(cdp, "booking scrollbar stays inside", "document.querySelector('.modal__dialog').scrollHeight <= document.querySelector('.modal__dialog').clientHeight + 1 && getComputedStyle(document.querySelector('.booking-form')).overflowY === 'auto'");
 
   await navigate(cdp, `${baseUrl}/`);
   await setViewport(cdp, 390, 900, true);
@@ -149,6 +158,7 @@ try {
   await expect(cdp, "revival counter present", "document.querySelector('[data-revival-counter]') !== null");
   await expect(cdp, "revival counter copy", "document.querySelector('.repair-stage__counter')?.textContent.includes('Устройств отремонтировано') && document.querySelector('.repair-stage__counter')?.textContent.includes('счёт продолжает расти')");
   await expect(cdp, "hero action strip", "document.querySelectorAll('.hero-action-bar .hero__actions .btn').length === 3 && document.querySelectorAll('.hero-action-bar .hero-trust span').length === 3");
+  await expect(cdp, "hero trust copy", "[...document.querySelectorAll('.hero-trust span')].map((item) => item.textContent.replace(/\\s+/g, ' ').trim()).join('|').includes('2-3 часа типовой ремонт|до 12 мес гарантия|с 2016 г. работаем')");
   await expect(cdp, "hero onsite action", "document.querySelector('.hero-action-bar__onsite')?.getAttribute('href') === '#onsite-service' && document.querySelector('.hero-action-bar__onsite')?.textContent.includes('Заказать выезд мастера')");
   await expect(cdp, "onsite follows specialization", "document.querySelector('#specialization').nextElementSibling?.id === 'onsite-service'");
   await expect(cdp, "reviews follow onsite", "document.querySelector('#onsite-service').nextElementSibling?.id === 'reviews'");
@@ -158,6 +168,8 @@ try {
   await expect(cdp, "category background images", "document.querySelectorAll('.cat-card__image').length === 6 && [...document.querySelectorAll('.cat-card__image')].every((image) => image.getAttribute('src')?.endsWith('.png'))");
   await expect(cdp, "repair status widget", "document.querySelector('.status-widget iframe')?.src.includes('app.helloclient.by/check.html')");
   await expect(cdp, "review platform summaries", "document.querySelector('.platform-rating--yandex')?.textContent.includes('26 отзывов') && document.querySelector('.platform-rating--twogis')?.textContent.includes('239 отзывов')");
+  await expect(cdp, "2gis addresses enlarged", "[...document.querySelectorAll('.platform-rating__branches a')].every((item) => Number.parseFloat(getComputedStyle(item).fontSize) >= 16)");
+  await expect(cdp, "payment methods", "document.querySelectorAll('.payment-card').length === 4 && [...document.querySelectorAll('.payment-card img')].every((image) => image.getAttribute('src')?.endsWith('.webp'))");
   const revivalDuring = await cdp.eval("Number(document.querySelector('[data-revival-counter]')?.textContent.replace(/\\D/g, '') || 0)");
   if (revivalDuring.result.value <= 0 || revivalDuring.result.value >= 523847) failures.push("revival counter starts animated");
   await delay(2600);
@@ -168,6 +180,9 @@ try {
   if (revivalGrown.result.value <= revivalReady.result.value) failures.push("revival counter keeps growing");
   await waitFor(cdp, "document.querySelector('.light-hero__media img')?.naturalWidth > 1000");
   await expect(cdp, "home mobile no body overflow", "document.documentElement.scrollWidth <= window.innerWidth + 2");
+  await expect(cdp, "mobile business shortcut", "getComputedStyle(document.querySelector('.header-b2b')).display !== 'none' && document.querySelector('.header-b2b').getBoundingClientRect().top >= document.querySelector('.site-header__inner').getBoundingClientRect().bottom && document.querySelector('.header-b2b').getBoundingClientRect().bottom <= document.querySelector('.site-header').getBoundingClientRect().bottom");
+  await expect(cdp, "mobile header counter does not overlap booking", "document.querySelector('.header-repair-counter').getBoundingClientRect().right <= document.querySelector('.site-header .btn-primary').getBoundingClientRect().left + 1");
+  await expect(cdp, "mobile contacts lead", "document.querySelector('.contact-lines--lead').getBoundingClientRect().top < document.querySelector('.contact-head__text').getBoundingClientRect().top && Number.parseFloat(getComputedStyle(document.querySelector('.contact-lines--lead a')).fontSize) >= 20");
   await expect(cdp, "light hero image remains visible", "getComputedStyle(document.querySelector('.light-hero__media img')).display !== 'none'");
   await expect(cdp, "mobile onsite action full row", "document.querySelector('.hero-action-bar__onsite').getBoundingClientRect().width > document.querySelector('.hero-action-bar__primary').getBoundingClientRect().width * 1.8");
   await expect(cdp, "mobile onsite order", "document.querySelector('.onsite-media').getBoundingClientRect().top < document.querySelector('.onsite-form').getBoundingClientRect().top");
@@ -190,8 +205,11 @@ try {
     "review logos fill cards",
     "getComputedStyle(document.querySelector('.platform-rating--yandex'), '::before').content.includes('Яндекс') && getComputedStyle(document.querySelector('.platform-rating--twogis'), '::before').content.includes('2ГИС')"
   );
+  await expect(cdp, "desktop form and map aligned", "Math.abs(document.querySelector('.contact-form').getBoundingClientRect().height - document.querySelector('.contact-card').getBoundingClientRect().height) <= 2");
+  await expect(cdp, "gray footer with white text", "getComputedStyle(document.querySelector('.footer')).backgroundColor === 'rgb(71, 85, 105)' && getComputedStyle(document.querySelector('.footer__inner')).color === 'rgb(255, 255, 255)'");
   await navigate(cdp, `${baseUrl}/b2b/`);
   await expect(cdp, "b2b page rendered", "document.body.classList.contains('b2b-page') && document.querySelectorAll('.b2b-services article').length === 4");
+  await expect(cdp, "b2b slogan", "document.querySelector('.b2b-hero h1')?.textContent.includes('Ваш бизнес работает') && document.querySelector('.b2b-hero h1')?.textContent.includes('Сервисом 101')");
   await expect(cdp, "b2b form", "document.querySelector('.b2b-form')?.action.includes('shineteatr@gmail.com')");
   await expect(cdp, "b2b no body overflow", "document.documentElement.scrollWidth <= window.innerWidth + 2");
 

@@ -1,8 +1,8 @@
-# 10108
+# 10109
 
 Service 101 concept with a blue navigation header, responsive repair catalog, B2B page,
-animated counters, booking forms, a dedicated on-site technician request flow, repair
-status widget and review platform summaries.
+animated counters, booking forms, an on-site technician request flow, payment methods,
+category-specific repair guidance, repair status widget and review platform summaries.
 
 ## Update prices
 
