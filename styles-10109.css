@@ -198,8 +198,8 @@
 
 .payment-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
   margin-top: 32px;
 }
 
@@ -384,12 +384,39 @@
   text-decoration: none;
 }
 
-.service-map img {
-  display: block;
-  width: 100%;
-  height: 100%;
+.service-map__fallback {
+  display: grid;
+  place-content: center;
+  gap: 8px;
   min-height: 420px;
-  object-fit: cover;
+  padding: 32px;
+  color: #334155;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 20%, rgba(14, 165, 233, 0.16), transparent 40%),
+    #eaf7ff;
+}
+
+.service-map__fallback strong {
+  color: #0f172a;
+  font-size: 22px;
+}
+
+.service-map__fallback a {
+  margin-top: 8px;
+  color: #0369a1;
+  font-weight: 750;
+}
+
+.service-map[data-map-initialized="true"] .service-map__fallback {
+  display: none;
+}
+
+#specialization .section-head,
+#specialization .section-title,
+#specialization .section-text {
+  width: 100%;
+  text-align: left;
 }
 
 /* Catalog pricing */

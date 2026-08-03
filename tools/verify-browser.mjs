@@ -97,9 +97,10 @@ try {
   await expect(cdp, "no breadcrumbs", "document.querySelector('.breadcrumbs') === null");
   await expect(cdp, "no available works heading", "document.querySelector('.prices-panel__head h2') === null");
   await expect(cdp, "collapsed services button", "document.querySelector('.expand-services')?.textContent.includes('Раскройте')");
-  await expect(cdp, "contact block present", "document.querySelector('.contact-section .contact-form') !== null && document.querySelector('.service-map img') !== null");
-  await waitFor(cdp, "document.querySelector('.service-map img')?.naturalWidth >= 650", 12000);
-  await expect(cdp, "Yandex map has two standalone markers", "document.querySelector('.service-map img')?.src.includes('static-maps.yandex.ru') && document.querySelector('.service-map img')?.src.includes('pt=136.9882456') && document.querySelector('.service-map img')?.src.includes('137.0645113') && !document.querySelector('.service-map img')?.src.includes('rtext=') && !document.querySelector('.service-map img')?.src.includes('pl=')");
+  await expect(cdp, "contact block present", "document.querySelector('.contact-section .contact-form') !== null && document.querySelector('.js-yandex-map') !== null");
+  await waitFor(cdp, "document.querySelector('.service-map')?.dataset.mapInitialized === 'true'", 20000);
+  await expect(cdp, "Yandex map has two standalone markers", `document.querySelector('.service-map')?.dataset.markerCount === '2' && document.querySelector('.service-map img[src*="static-maps.yandex.ru"]') === null`);
+  if (screenshotDir) await captureSection(cdp, "#contacts", "contacts-map.png");
   await expect(cdp, "OpenStreetMap removed", "document.querySelector('link[href*=" + '"openstreetmap"' + "]') === null && document.querySelector('script[src*=" + '"leaflet"' + "]') === null && !document.documentElement.innerHTML.includes('tile.openstreetmap.org')");
   await expect(cdp, "brand counter present", "document.querySelector('[data-brand-counter-value]') !== null");
   await expect(cdp, "brand counter spans selector", "document.querySelector('.selection-shell > .brand-counter') !== null && document.querySelector('.selection-shell__main .catalog-controls') !== null");
@@ -214,6 +215,7 @@ try {
   await cdp.eval("document.querySelector('.service-map').scrollIntoView({ block: 'start' })");
   await delay(300);
   await expect(cdp, "map stays behind fixed header", "document.elementFromPoint(Math.round(innerWidth / 2), 20)?.closest('.site-header') !== null && Number.parseInt(getComputedStyle(document.querySelector('.site-header')).zIndex, 10) > Number.parseInt(getComputedStyle(document.querySelector('.service-map')).zIndex || '0', 10)");
+  if (screenshotDir) await captureSection(cdp, ".service-map", "contacts-map-mobile.png");
 
   await setViewport(cdp, 320, 900, true);
   await navigate(cdp, `${baseUrl}/`);
@@ -229,8 +231,9 @@ try {
     "[...document.querySelectorAll('.cat-card')].every((card) => { const image = card.querySelector('.cat-card__image'); const a = card.getBoundingClientRect(); const b = image.getBoundingClientRect(); return b.width >= a.width - 2 && b.height >= a.height - 2 && getComputedStyle(image).objectFit === 'cover'; })"
   );
   await expect(cdp, "category titles centered with left icons", "[...document.querySelectorAll('.cat-card')].every((card) => { const cardBox = card.getBoundingClientRect(); const title = card.querySelector('.cat-title').getBoundingClientRect(); const icon = card.querySelector('.cat-icon').getBoundingClientRect(); const content = card.querySelector('.cat-card__content').getBoundingClientRect(); return Math.abs((title.left + title.width / 2) - (cardBox.left + cardBox.width / 2)) <= 2 && title.top - cardBox.top <= 24 && icon.width >= 66 && icon.left < content.left && content.left >= icon.right + 10; })");
+  await expect(cdp, "specialization heading aligned with description", "Math.abs(document.querySelector('#specialization .section-title').getBoundingClientRect().left - document.querySelector('#specialization .section-text').getBoundingClientRect().left) <= 1");
   if (screenshotDir) await captureSection(cdp, "#payments", "payments-desktop.png");
-  await expect(cdp, "desktop payment images restored", "[...document.querySelectorAll('.payment-card')].every((card) => { const image = card.querySelector('img').getBoundingClientRect(); const ratio = image.width / card.getBoundingClientRect().width; return ratio >= 0.99 && ratio <= 1.01 && image.height / image.width > 0.74 && image.height / image.width < 0.76; })");
+  await expect(cdp, "desktop payment images restored", "getComputedStyle(document.querySelector('.payment-grid')).gridTemplateColumns.split(' ').length === 2 && [...document.querySelectorAll('.payment-card')].every((card) => { const image = card.querySelector('img').getBoundingClientRect(); const ratio = image.width / card.getBoundingClientRect().width; return ratio >= 0.99 && ratio <= 1.01 && image.height / image.width > 0.74 && image.height / image.width < 0.76; })");
   await expect(cdp, "desktop cta actions moved right", "document.querySelector('.cta-actions').getBoundingClientRect().left > document.querySelector('.cta-band').getBoundingClientRect().left + document.querySelector('.cta-band').getBoundingClientRect().width * 0.55 && [...document.querySelectorAll('.cta-actions .btn')].every((button) => button.getBoundingClientRect().height >= 50)");
   if (screenshotDir) await captureSection(cdp, ".cta-band", "cta-desktop.png");
   if (screenshotDir) await captureSection(cdp, "#specialization", "specialization-desktop.png");
@@ -410,7 +413,7 @@ async function captureSection(cdp, selector, filename) {
     const element = document.querySelector(${JSON.stringify(selector)});
     if (!element) return false;
     document.documentElement.style.scrollBehavior = "auto";
-    window.scrollTo(0, element.offsetTop - 82);
+    window.scrollTo(0, window.scrollY + element.getBoundingClientRect().top - 82);
     return true;
   })()`);
   await delay(500);

@@ -16,9 +16,8 @@
     consoles: { value: 202, dailyAverage: 0.253 },
   };
   let repairStats = defaultRepairStats;
-  const serviceMapImageUrl =
-    "https://static-maps.yandex.ru/1.x/?ll=137.026378,50.567777&spn=0.095,0.062&size=650,450&l=map&pt=136.9882456,50.5460458,pm2blm1~137.0645113,50.5895089,pm2blm2&lang=ru_RU";
   const serviceMapOpenUrl = "https://yandex.ru/maps/?ll=137.026378%2C50.567777&z=12";
+  let yandexMapsPromise = null;
 
   const branches = [
     {
@@ -124,6 +123,7 @@
     initRepairStatistics();
     initLightThemeMotion();
     initGlobalBookingButtons();
+    initServiceMaps();
     loadCatalog();
     if (new URLSearchParams(location.search).has("sent")) {
       setTimeout(() => openBookingModal("sent"), 400);
@@ -143,6 +143,7 @@
         renderModelPage(pageState.category, pageState.brand, pageState.model);
       }
       if (pageState.page === "onsite") renderOnsitePage();
+      initServiceMaps();
     } catch (error) {
       if (app) {
         app.innerHTML = `<section class="section"><div class="container"><div class="error-box">Не удалось загрузить услуги и цены. Попробуйте обновить страницу или позвоните в сервис.</div></div></section>`;
@@ -568,9 +569,89 @@
   }
 
   function renderServiceMap() {
-    return `<a class="map-frame service-map" href="${serviceMapOpenUrl}" target="_blank" rel="noreferrer" aria-label="Открыть два филиала Сервиса 101 на Яндекс Картах">
-      <img src="${serviceMapImageUrl.replaceAll("&", "&amp;")}" alt="Два филиала Сервиса 101: Вокзальная, 47 и Орехова, 54" loading="lazy">
-    </a>`;
+    return `<div class="map-frame service-map js-yandex-map" role="region" aria-label="Карта двух филиалов Сервиса 101">
+      <div class="service-map__fallback">
+        <strong>Два филиала Сервиса 101</strong>
+        <span>Загружаем интерактивную Яндекс Карту...</span>
+        <a href="${serviceMapOpenUrl}" target="_blank" rel="noreferrer">Открыть в Яндекс Картах</a>
+      </div>
+    </div>`;
+  }
+
+  function initServiceMaps() {
+    const mapElements = [...document.querySelectorAll(".js-yandex-map:not([data-map-loading])")];
+    if (!mapElements.length) return;
+
+    mapElements.forEach((element) => {
+      element.dataset.mapLoading = "true";
+    });
+
+    loadYandexMaps()
+      .then(() => {
+        window.ymaps.ready(() => {
+          mapElements.forEach(createServiceMap);
+        });
+      })
+      .catch(() => {
+        mapElements.forEach((element) => {
+          element.dataset.mapError = "true";
+          element.querySelector(".service-map__fallback span").textContent =
+            "Карта временно недоступна. Откройте адреса в Яндекс Картах.";
+        });
+      });
+  }
+
+  function loadYandexMaps() {
+    if (window.ymaps) return Promise.resolve(window.ymaps);
+    if (yandexMapsPromise) return yandexMapsPromise;
+
+    yandexMapsPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      const apiKey = document.querySelector('meta[name="yandex-maps-api-key"]')?.content.trim();
+      const params = new URLSearchParams({ lang: "ru_RU" });
+      if (apiKey) params.set("apikey", apiKey);
+      script.src = `https://api-maps.yandex.ru/2.1/?${params.toString()}`;
+      script.async = true;
+      script.onload = () => (window.ymaps ? resolve(window.ymaps) : reject(new Error("Yandex Maps API unavailable")));
+      script.onerror = reject;
+      document.head.append(script);
+    });
+
+    return yandexMapsPromise;
+  }
+
+  function createServiceMap(element) {
+    if (element.dataset.mapInitialized === "true") return;
+
+    const map = new window.ymaps.Map(element, {
+      center: [50.566031, 137.03],
+      zoom: 12,
+      controls: ["zoomControl", "fullscreenControl"],
+    });
+    const placemarks = [
+      new window.ymaps.Placemark(
+        [50.546031, 136.98823],
+        {
+          hintContent: "Сервис 101 · Вокзальная, 47",
+          balloonContent: "<strong>Сервис 101</strong><br>ул. Вокзальная, 47<br>Ежедневно 10:00-19:00",
+        },
+        { preset: "islands#darkBlueDotIcon" }
+      ),
+      new window.ymaps.Placemark(
+        [50.589552, 137.064586],
+        {
+          hintContent: "Сервис 101 · Орехова, 54",
+          balloonContent: "<strong>Сервис 101</strong><br>ул. Орехова, 54<br>Ежедневно 10:00-19:00",
+        },
+        { preset: "islands#darkBlueDotIcon" }
+      ),
+    ];
+
+    placemarks.forEach((placemark) => map.geoObjects.add(placemark));
+    map.behaviors.disable("scrollZoom");
+    element.dataset.mapInitialized = "true";
+    element.dataset.markerCount = String(map.geoObjects.getLength());
+    element.service101Map = map;
   }
 
   function getServices(activeRecord) {

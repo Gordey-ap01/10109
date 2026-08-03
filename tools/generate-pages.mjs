@@ -14,8 +14,6 @@ const twoGisSecondUrl = "https://2gis.ru/komsomolsk-on-amur/firm/700000010489115
 const googleUrl =
   "https://www.google.com/search?q=%D0%A1%D0%B5%D1%80%D0%B2%D0%B8%D1%81+101+%D0%A0%D0%B5%D0%BC%D0%BE%D0%BD%D1%82+%D0%BD%D0%BE%D1%83%D1%82%D0%B1%D1%83%D0%BA%D0%BE%D0%B2+%D0%B8%D0%B3%D1%80%D0%BE%D0%B2%D1%8B%D1%85+%D0%BF%D1%80%D0%B8%D1%81%D1%82%D0%B0%D0%B2%D0%BE%D0%BA+%D1%82%D0%B5%D0%BB%D0%B5%D1%84%D0%BE%D0%BD%D0%BE%D0%B2";
 const statusWidgetUrl = "https://app.helloclient.by/check.html#126833";
-const serviceMapImageUrl =
-  "https://static-maps.yandex.ru/1.x/?ll=137.026378,50.567777&spn=0.095,0.062&size=650,450&l=map&pt=136.9882456,50.5460458,pm2blm1~137.0645113,50.5895089,pm2blm2&lang=ru_RU";
 const serviceMapOpenUrl = "https://yandex.ru/maps/?ll=137.026378%2C50.567777&z=12";
 
 const categoryMeta = {
@@ -586,9 +584,13 @@ function contactBody(root) {
 }
 
 function serviceMapMarkup() {
-  return `<a class="map-frame service-map" href="${serviceMapOpenUrl}" target="_blank" rel="noreferrer" aria-label="Открыть два филиала Сервиса 101 на Яндекс Картах">
-    <img src="${serviceMapImageUrl.replaceAll("&", "&amp;")}" alt="Два филиала Сервиса 101: Вокзальная, 47 и Орехова, 54" loading="lazy">
-  </a>`;
+  return `<div class="map-frame service-map js-yandex-map" role="region" aria-label="Карта двух филиалов Сервиса 101">
+    <div class="service-map__fallback">
+      <strong>Два филиала Сервиса 101</strong>
+      <span>Загружаем интерактивную Яндекс Карту...</span>
+      <a href="${serviceMapOpenUrl}" target="_blank" rel="noreferrer">Открыть в Яндекс Картах</a>
+    </div>
+  </div>`;
 }
 
 function loaderBody(title) {
