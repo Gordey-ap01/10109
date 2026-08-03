@@ -48,21 +48,6 @@
   height: auto;
 }
 
-.brand__identity .brand__since {
-  margin: 0;
-  padding-left: 68px;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 11px;
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.brand__identity .brand__since strong {
-  color: #fff;
-  font-size: 15px;
-  font-weight: 800;
-}
-
 .header-actions {
   gap: 18px;
 }
@@ -645,10 +630,6 @@
 
   .site-header .brand {
     min-width: 0;
-  }
-
-  .site-header .brand__since {
-    display: none;
   }
 
   .brand__logo {

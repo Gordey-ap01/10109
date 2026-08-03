@@ -229,7 +229,6 @@ function header(root) {
     <a class="brand" href="${root}/index.html" aria-label="Сервис 101">
       <span class="brand__identity">
         <img class="brand__logo" src="${root}/assets/branding/logo.svg" alt="Сервис 101" width="246" height="42">
-        <span class="brand__since">Работаем с <strong>2016</strong> года</span>
       </span>
     </a>
     <div class="header-repair-counter" aria-label="Всего отремонтировано устройств">
@@ -288,7 +287,7 @@ function homeBody() {
       <div class="repair-stage__counter">
         <span>Устройств отремонтировано</span>
         <strong class="revival-counter__number" data-revival-counter>8 545</strong>
-        <small>оценка на сегодня по данным сервиса</small>
+        <small>и счёт продолжает расти</small>
       </div>
       <span class="repair-float repair-float--phone" aria-hidden="true">Смартфоны</span>
       <span class="repair-float repair-float--laptop" aria-hidden="true">Ноутбуки</span>
@@ -304,7 +303,7 @@ function homeBody() {
       <div class="hero-trust" aria-label="Преимущества сервиса">
         <span><strong>2-3 часа</strong> типовой ремонт</span>
         <span><strong>до 12 мес</strong> гарантия</span>
-        <span><strong>с 2016 г.</strong> работаем</span>
+        <span><strong>с 2016 года</strong> работаем</span>
       </div>
     </div>
   </div>

@@ -49,7 +49,7 @@ try {
     "Number.parseFloat(getComputedStyle(document.querySelector('.header-repair-counter strong')).fontSize) >= 30 && document.querySelector('.header-repair-counter small').getBoundingClientRect().top >= document.querySelector('.header-repair-counter strong').getBoundingClientRect().bottom - 1"
   );
   await expect(cdp, "header logo", "document.querySelector('.brand__logo')?.naturalWidth >= 246");
-  await expect(cdp, "service age replaces city", "document.querySelector('.brand__since')?.textContent.replace(/\\s+/g, ' ').trim() === 'Работаем с 2016 года' && document.querySelector('.brand__since strong')?.textContent === '2016' && document.querySelector('.brand__city') === null");
+  await expect(cdp, "service age removed from logo", "document.querySelector('.brand__since') === null && document.querySelector('.brand__city') === null");
   await expect(cdp, "site favicons", "document.querySelector('link[rel=\"icon\"][sizes=\"32x32\"]') !== null && document.querySelector('link[rel=\"apple-touch-icon\"]') !== null");
   await expect(
     cdp,
@@ -170,9 +170,9 @@ try {
   await expect(cdp, "white booking button", "getComputedStyle(document.querySelector('.site-header .btn-primary')).backgroundColor === 'rgb(255, 255, 255)'");
   await expect(cdp, "animated repair stage present", "document.querySelector('.repair-stage__pulse') !== null && document.querySelectorAll('.repair-float').length === 3");
   await expect(cdp, "revival counter present", "document.querySelector('[data-revival-counter]') !== null");
-  await expect(cdp, "revival counter copy", "document.querySelector('.repair-stage__counter')?.textContent.includes('Устройств отремонтировано') && document.querySelector('.repair-stage__counter')?.textContent.includes('по данным сервиса')");
+  await expect(cdp, "revival counter copy", "document.querySelector('.repair-stage__counter')?.textContent.includes('Устройств отремонтировано') && document.querySelector('.repair-stage__counter')?.textContent.includes('счёт продолжает расти')");
   await expect(cdp, "hero action strip", "document.querySelectorAll('.hero-action-bar .hero__actions .btn').length === 3 && document.querySelectorAll('.hero-action-bar .hero-trust span').length === 3");
-  await expect(cdp, "hero trust copy", "[...document.querySelectorAll('.hero-trust span')].map((item) => item.textContent.replace(/\\s+/g, ' ').trim()).join('|').includes('2-3 часа типовой ремонт|до 12 мес гарантия|с 2016 г. работаем')");
+  await expect(cdp, "hero trust copy", "[...document.querySelectorAll('.hero-trust span')].map((item) => item.textContent.replace(/\\s+/g, ' ').trim()).join('|').includes('2-3 часа типовой ремонт|до 12 мес гарантия|с 2016 года работаем')");
   await expect(cdp, "hero onsite action", "document.querySelector('.hero-action-bar__onsite')?.getAttribute('href') === '#onsite-service' && document.querySelector('.hero-action-bar__onsite')?.textContent.includes('Заказать выезд мастера')");
   await expect(cdp, "onsite follows specialization", "document.querySelector('#specialization').nextElementSibling?.id === 'onsite-service'");
   await expect(cdp, "reviews follow onsite", "document.querySelector('#onsite-service').nextElementSibling?.id === 'reviews'");
