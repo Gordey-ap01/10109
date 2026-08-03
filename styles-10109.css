@@ -706,11 +706,14 @@
   }
 
   .cat-card {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
     min-height: 172px;
     padding: 18px;
   }
 
   .cat-card__head {
+    width: 100%;
     gap: 10px;
   }
 
@@ -725,7 +728,13 @@
   }
 
   .cat-card__content {
-    margin-top: 2px;
+    max-width: 100%;
+    margin: 8px 0 0;
+  }
+
+  .cat-open {
+    grid-column: 1;
+    margin: 13px 0 0;
   }
 
   .cat-card__image {
