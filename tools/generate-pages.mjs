@@ -303,7 +303,7 @@ function homeBody() {
       <div class="hero-trust" aria-label="Преимущества сервиса">
         <span><strong>2-3 часа</strong> типовой ремонт</span>
         <span><strong>до 12 мес</strong> гарантия</span>
-        <span><strong>с 2016 года</strong> работаем</span>
+        <span><strong>с 2016 г</strong> работаем для Вас</span>
       </div>
     </div>
   </div>

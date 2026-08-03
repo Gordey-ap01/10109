@@ -98,11 +98,23 @@
 .cat-card__head {
   position: relative;
   z-index: 2;
-  display: flex;
-  min-width: 0;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 14px;
+  display: contents;
+}
+
+.cat-card {
+  grid-template-columns: 66px minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  column-gap: 14px;
+  row-gap: 10px;
+}
+
+.cat-title {
+  position: relative;
+  z-index: 2;
+  grid-column: 1 / -1;
+  grid-row: 1;
+  max-width: none;
+  text-align: center;
 }
 
 .cat-card:hover .cat-card__image {
@@ -112,6 +124,10 @@
 }
 
 .cat-icon {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
+  justify-self: start;
   flex: 0 0 auto;
   width: 66px;
   height: 66px;
@@ -123,13 +139,11 @@
 }
 
 .cat-card__content {
-  margin-top: 8px;
-}
-
-.cat-title {
-  max-width: calc(100% - 80px);
-  font-size: 21px;
-  line-height: 1.15;
+  grid-column: 2;
+  grid-row: 2;
+  align-self: start;
+  max-width: none;
+  margin: 0;
 }
 
 .cat-text {
@@ -139,7 +153,10 @@
 }
 
 .cat-open {
-  margin-top: 13px;
+  grid-column: 2;
+  grid-row: 3;
+  align-self: end;
+  margin: 0;
 }
 
 .platform-rating__branches {
@@ -246,10 +263,10 @@
 
 @media (min-width: 761px) {
   .payment-card img {
-    width: 80%;
+    width: 100%;
     height: auto;
-    margin: 18px auto 0;
-    border-radius: 6px;
+    margin: 0;
+    border-radius: 0;
   }
 
   .cta-band {
@@ -742,14 +759,13 @@
   }
 
   .cat-card {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: 62px minmax(0, 1fr);
     grid-template-rows: auto 1fr auto;
     min-height: 172px;
     padding: 18px;
   }
 
   .cat-card__head {
-    width: 100%;
     gap: 10px;
   }
 
@@ -764,13 +780,12 @@
   }
 
   .cat-card__content {
-    max-width: 100%;
-    margin: 8px 0 0;
+    margin: 0;
   }
 
   .cat-open {
-    grid-column: 1;
-    margin: 13px 0 0;
+    grid-column: 2;
+    margin: 0;
   }
 
   .cat-card__image {
