@@ -7,9 +7,18 @@
   let records = [];
   let currentServices = [];
   let currentDevice = null;
-  let categoryCounterTimer = null;
-  const serviceMapEmbedUrl =
-    "https://yandex.ru/map-widget/v1/?ll=137.026378%2C50.567777&mode=routes&rtext=50.5460458%2C136.9882456~50.5895089%2C137.0645113&rtt=auto&z=12";
+  const defaultRepairStats = {
+    baselineDate: "2026-08-03",
+    timezone: "Asia/Vladivostok",
+    total: { value: 8545, dailyAverage: 3.344 },
+    phonesAndTablets: { value: 6527, dailyAverage: 2.555 },
+    computersAndLaptops: { value: 1185, dailyAverage: 1.481 },
+    consoles: { value: 202, dailyAverage: 0.253 },
+  };
+  let repairStats = defaultRepairStats;
+  const serviceMapImageUrl =
+    "https://static-maps.yandex.ru/1.x/?ll=137.026378,50.567777&spn=0.095,0.062&size=650,450&l=map&pt=136.9882456,50.5460458,pm2blm1~137.0645113,50.5895089,pm2blm2&lang=ru_RU";
+  const serviceMapOpenUrl = "https://yandex.ru/maps/?ll=137.026378%2C50.567777&z=12";
 
   const branches = [
     {
@@ -112,8 +121,7 @@
   };
 
   document.addEventListener("DOMContentLoaded", () => {
-    initHeaderCounter();
-    initRevivalCounter();
+    initRepairStatistics();
     initLightThemeMotion();
     initGlobalBookingButtons();
     loadCatalog();
@@ -340,7 +348,7 @@
     bindModelScroller();
     bindHorizontalScroll();
     syncBookingBar();
-    startCategoryCounter(activeRecord, options.onsite);
+    applyRepairStatistics();
   }
 
   function renderTopTabs(activeSlug) {
@@ -488,35 +496,15 @@
     `;
   }
 
-  function startCategoryCounter(activeRecord, onsite) {
-    if (categoryCounterTimer) {
-      clearInterval(categoryCounterTimer);
-      categoryCounterTimer = null;
-    }
-    const valueEl = document.querySelector("[data-brand-counter-value]");
-    if (!valueEl) return;
-    let value = getCategoryCounter(activeRecord, onsite).value;
-    valueEl.textContent = formatNumber(value);
-    categoryCounterTimer = setInterval(() => {
-      value += randomInt(1, 4);
-      valueEl.textContent = formatNumber(value);
-      valueEl.classList.remove("bump");
-      void valueEl.offsetWidth;
-      valueEl.classList.add("bump");
-    }, 2000);
-  }
-
   function getCategoryCounter(activeRecord, onsite) {
-    if (onsite) return { value: 29817, label: "устройств с выездом" };
+    if (onsite) return { value: estimateRepairCount("total"), label: "устройств всего" };
     return (
       {
-        telefony: { value: 214850, label: "телефонов" },
-        noutbuki: { value: 118420, label: "ноутбуков" },
-        kompyutery: { value: 85429, label: "компьютеров" },
-        pristavki: { value: 31740, label: "приставок" },
-        videokarty: { value: 16621, label: "видеокарт" },
-        gejmpady: { value: 11934, label: "геймпадов" },
-      }[activeRecord.categorySlug] || { value: 523847, label: "устройств" }
+        telefony: { value: estimateRepairCount("phonesAndTablets"), label: "телефонов и планшетов" },
+        noutbuki: { value: estimateRepairCount("computersAndLaptops"), label: "компьютеров и ноутбуков" },
+        kompyutery: { value: estimateRepairCount("computersAndLaptops"), label: "компьютеров и ноутбуков" },
+        pristavki: { value: estimateRepairCount("consoles"), label: "приставок и консолей" },
+      }[activeRecord.categorySlug] || { value: estimateRepairCount("total"), label: "устройств всего" }
     );
   }
 
@@ -580,7 +568,9 @@
   }
 
   function renderServiceMap() {
-    return `<iframe class="map-frame service-map" title="Два филиала Сервиса 101 на Яндекс Картах" src="${serviceMapEmbedUrl.replaceAll("&", "&amp;")}" loading="lazy" allowfullscreen></iframe>`;
+    return `<a class="map-frame service-map" href="${serviceMapOpenUrl}" target="_blank" rel="noreferrer" aria-label="Открыть два филиала Сервиса 101 на Яндекс Картах">
+      <img src="${serviceMapImageUrl.replaceAll("&", "&amp;")}" alt="Два филиала Сервиса 101: Вокзальная, 47 и Орехова, 54" loading="lazy">
+    </a>`;
   }
 
   function getServices(activeRecord) {
@@ -985,51 +975,72 @@
     form.elements["_next"].value = `${location.origin}${location.pathname}?sent=1`;
   }
 
-  function initRevivalCounter() {
-    const el = document.querySelector("[data-revival-counter]");
-    if (!el) return;
-    const target = 523847;
-    const duration = 2400;
-    const schedule = [1000, 2000, 5000, 2000, 10000];
-    let value = 0;
-    let step = 0;
-    let startedAt = null;
+  function initRepairStatistics() {
+    applyRepairStatistics();
+    fetch(`${root}/data/repair-stats.json`, { cache: "no-store" })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Repair statistics ${response.status}`);
+        return response.json();
+      })
+      .then((stats) => {
+        if (!isValidRepairStats(stats)) return;
+        repairStats = stats;
+        applyRepairStatistics();
+      })
+      .catch(() => {
+        // The built-in baseline keeps the counters available if the data file cannot be loaded.
+      });
+  }
 
-    function write(valueToRender, animateHeader = false) {
-      el.textContent = formatNumber(valueToRender);
-      el.classList.remove("bump");
-      void el.offsetWidth;
-      el.classList.add("bump");
-      writeHeaderCounter(valueToRender, animateHeader);
-    }
+  function isValidRepairStats(stats) {
+    return (
+      typeof stats?.baselineDate === "string" &&
+      ["total", "phonesAndTablets", "computersAndLaptops", "consoles"].every(
+        (key) => Number.isFinite(stats[key]?.value) && Number.isFinite(stats[key]?.dailyAverage)
+      )
+    );
+  }
 
-    function animate(now) {
-      if (startedAt === null) startedAt = now;
-      const progress = Math.min((now - startedAt) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      value = Math.round(target * eased);
-      write(value);
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-        return;
-      }
-      value = target;
-      write(value);
-      tick();
-    }
+  function applyRepairStatistics() {
+    const total = estimateRepairCount("total");
+    writeHeaderCounter(total);
+    document.querySelectorAll("[data-revival-counter]").forEach((counter) => {
+      counter.textContent = formatNumber(total);
+    });
 
-    function tick() {
-      const delay = schedule[step % schedule.length];
-      step += 1;
-      setTimeout(() => {
-        value += 1;
-        write(value, true);
-        tick();
-      }, delay);
-    }
+    const categorySlug = currentDevice?.categorySlug || pageState.category;
+    const valueEl = document.querySelector("[data-brand-counter-value]");
+    const labelEl = document.querySelector(".brand-counter__brand");
+    if (!categorySlug || !valueEl || !labelEl) return;
+    const categoryCounter = getCategoryCounter({ categorySlug }, pageState.page === "onsite");
+    valueEl.textContent = formatNumber(categoryCounter.value);
+    labelEl.textContent = categoryCounter.label;
+  }
 
-    write(0);
-    requestAnimationFrame(animate);
+  function estimateRepairCount(key) {
+    const stat = repairStats[key] || defaultRepairStats[key] || defaultRepairStats.total;
+    const elapsedDays = getElapsedRepairDays();
+    return Math.round(stat.value + stat.dailyAverage * elapsedDays);
+  }
+
+  function getElapsedRepairDays() {
+    const timezone = repairStats.timezone || defaultRepairStats.timezone;
+    const todayParts = Object.fromEntries(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: timezone,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      })
+        .formatToParts(new Date())
+        .filter((part) => part.type !== "literal")
+        .map((part) => [part.type, Number(part.value)])
+    );
+    const baseline = repairStats.baselineDate || defaultRepairStats.baselineDate;
+    const [year, month, day] = baseline.split("-").map(Number);
+    const todayUtc = Date.UTC(todayParts.year, todayParts.month - 1, todayParts.day);
+    const baselineUtc = Date.UTC(year, month - 1, day);
+    return Math.max(0, Math.floor((todayUtc - baselineUtc) / 86400000));
   }
 
   function initLightThemeMotion() {
@@ -1073,46 +1084,10 @@
     revealItems.forEach((item) => observer.observe(item));
   }
 
-  function initHeaderCounter() {
-    if (document.querySelector("[data-revival-counter]")) return;
-    const schedule = [1000, 2000, 5000, 2000, 10000];
-    let value = 523847;
-    let step = 0;
-
-    writeHeaderCounter(value);
-    const tick = () => {
-      const delay = schedule[step % schedule.length];
-      step += 1;
-      setTimeout(() => {
-        value += 1;
-        writeHeaderCounter(value, true);
-        tick();
-      }, delay);
-    };
-    tick();
-  }
-
-  function writeHeaderCounter(value, animate = false) {
+  function writeHeaderCounter(value) {
     document.querySelectorAll("[data-header-counter]").forEach((counter) => {
       counter.textContent = formatNumber(value);
-      if (!animate) return;
-      counter.classList.remove("bump");
-      void counter.offsetWidth;
-      counter.classList.add("bump");
     });
-  }
-
-  function writeCounter(id, value) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = formatNumber(value);
-    el.classList.remove("bump");
-    void el.offsetWidth;
-    el.classList.add("bump");
-  }
-
-  function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   function formatNumber(value) {

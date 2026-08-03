@@ -2534,6 +2534,11 @@ body {
   background: linear-gradient(to bottom right, #3b82f6, #6366f1, #0f172a);
 }
 
+.tab--pristavki:hover .tab-icon,
+.tab--pristavki.active .tab-icon {
+  background: linear-gradient(to bottom right, #0ea5e9, #2563eb, #4338ca);
+}
+
 .tab--vyezd:hover .tab-icon,
 .tab--vyezd.active .tab-icon {
   background: linear-gradient(to bottom right, #10b981, #06b6d4, #2563eb);

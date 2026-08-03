@@ -14,8 +14,9 @@ const twoGisSecondUrl = "https://2gis.ru/komsomolsk-on-amur/firm/700000010489115
 const googleUrl =
   "https://www.google.com/search?q=%D0%A1%D0%B5%D1%80%D0%B2%D0%B8%D1%81+101+%D0%A0%D0%B5%D0%BC%D0%BE%D0%BD%D1%82+%D0%BD%D0%BE%D1%83%D1%82%D0%B1%D1%83%D0%BA%D0%BE%D0%B2+%D0%B8%D0%B3%D1%80%D0%BE%D0%B2%D1%8B%D1%85+%D0%BF%D1%80%D0%B8%D1%81%D1%82%D0%B0%D0%B2%D0%BE%D0%BA+%D1%82%D0%B5%D0%BB%D0%B5%D1%84%D0%BE%D0%BD%D0%BE%D0%B2";
 const statusWidgetUrl = "https://app.helloclient.by/check.html#126833";
-const serviceMapEmbedUrl =
-  "https://yandex.ru/map-widget/v1/?ll=137.026378%2C50.567777&mode=routes&rtext=50.5460458%2C136.9882456~50.5895089%2C137.0645113&rtt=auto&z=12";
+const serviceMapImageUrl =
+  "https://static-maps.yandex.ru/1.x/?ll=137.026378,50.567777&spn=0.095,0.062&size=650,450&l=map&pt=136.9882456,50.5460458,pm2blm1~137.0645113,50.5895089,pm2blm2&lang=ru_RU";
+const serviceMapOpenUrl = "https://yandex.ru/maps/?ll=137.026378%2C50.567777&z=12";
 
 const categoryMeta = {
   telefony: {
@@ -228,12 +229,12 @@ function header(root) {
     <a class="brand" href="${root}/index.html" aria-label="Сервис 101">
       <span class="brand__identity">
         <img class="brand__logo" src="${root}/assets/branding/logo.svg" alt="Сервис 101" width="246" height="42">
-        <span class="brand__city">Комсомольск-на-Амуре</span>
+        <span class="brand__since">Работаем с <strong>2016</strong> года</span>
       </span>
     </a>
     <div class="header-repair-counter" aria-label="Всего отремонтировано устройств">
       <span>Отремонтировано</span>
-      <strong data-header-counter>523 847</strong>
+      <strong data-header-counter>8 545</strong>
       <small>устройств</small>
     </div>
     <div class="header-actions">
@@ -256,8 +257,9 @@ function footer(root) {
       <strong>Сервис 101</strong><br>
       Вокзальная, 47 · Орехова, 54 · ежедневно 10:00-19:00
     </div>
-    <div>
-      <a href="tel:+79940760101">+7 (994) 076-01-01</a> · <a href="mailto:101kms@mail.ru">101kms@mail.ru</a>
+    <div class="footer__contacts">
+      <a href="tel:+79940760101">+7 (994) 076-01-01</a>
+      <a href="mailto:101kms@mail.ru">101kms@mail.ru</a>
     </div>
     <div class="footer__actions">
       <a href="${root}/b2b/index.html">Для бизнеса</a>
@@ -280,13 +282,13 @@ function homeBody() {
       </div>
       <p class="hero__lead">Ремонт цифровой техники с гарантией до 12 месяцев. Диагностируем, согласовываем цену и возвращаем устройство в работу.</p>
     </div>
-    <div class="repair-stage" aria-live="polite">
+    <div class="repair-stage">
       <span class="repair-stage__pulse repair-stage__pulse--one" aria-hidden="true"></span>
       <span class="repair-stage__pulse repair-stage__pulse--two" aria-hidden="true"></span>
       <div class="repair-stage__counter">
         <span>Устройств отремонтировано</span>
-        <strong class="revival-counter__number" data-revival-counter>0</strong>
-        <small>и счёт продолжает расти</small>
+        <strong class="revival-counter__number" data-revival-counter>8 545</strong>
+        <small>оценка на сегодня по данным сервиса</small>
       </div>
       <span class="repair-float repair-float--phone" aria-hidden="true">Смартфоны</span>
       <span class="repair-float repair-float--laptop" aria-hidden="true">Ноутбуки</span>
@@ -378,9 +380,11 @@ function categoryCard(category) {
   const meta = categoryMeta[category.id] || { text: category.title, icon: pcIcon(), gradient: "grad-pc" };
   return `<a class="cat-card" href="./remont/${category.id}/index.html">
     <img class="cat-card__image" src="${meta.image || "./assets/categories/kompyutery.png"}" alt="" loading="lazy" aria-hidden="true">
-    <span class="cat-icon ${meta.gradient}">${meta.icon}</span>
-    <span class="cat-card__content">
+    <span class="cat-card__head">
       <span class="cat-title">${escapeHTML(category.name)}</span>
+      <span class="cat-icon ${meta.gradient}">${meta.icon}</span>
+    </span>
+    <span class="cat-card__content">
       <span class="cat-text">${escapeHTML(meta.text)}</span>
     </span>
     <span class="cat-open">Выбрать <span aria-hidden="true">→</span></span>
@@ -583,7 +587,9 @@ function contactBody(root) {
 }
 
 function serviceMapMarkup() {
-  return `<iframe class="map-frame service-map" title="Два филиала Сервиса 101 на Яндекс Картах" src="${serviceMapEmbedUrl.replaceAll("&", "&amp;")}" loading="lazy" allowfullscreen></iframe>`;
+  return `<a class="map-frame service-map" href="${serviceMapOpenUrl}" target="_blank" rel="noreferrer" aria-label="Открыть два филиала Сервиса 101 на Яндекс Картах">
+    <img src="${serviceMapImageUrl.replaceAll("&", "&amp;")}" alt="Два филиала Сервиса 101: Вокзальная, 47 и Орехова, 54" loading="lazy">
+  </a>`;
 }
 
 function loaderBody(title) {
