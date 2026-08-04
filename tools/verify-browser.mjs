@@ -151,7 +151,7 @@ try {
     "mobile device before prices",
     "document.querySelector('.device-card').getBoundingClientRect().top < document.querySelector('.prices-panel').getBoundingClientRect().top"
   );
-  await expect(cdp, "mobile horizontal selector gesture", "getComputedStyle(document.querySelector('[data-horizontal-scroll]')).touchAction === 'pan-x'");
+  await expect(cdp, "mobile selectors preserve vertical scroll", "[...document.querySelectorAll('[data-horizontal-scroll]')].every((row) => { const touchAction = getComputedStyle(row).touchAction; return touchAction === 'auto' || touchAction.includes('pan-y'); })");
   await expect(cdp, "mobile model arrows contained", "getComputedStyle(document.querySelector('.model-scroller__button--next')).display === 'none' && document.querySelector('.model-scroller').getBoundingClientRect().right <= document.documentElement.clientWidth + 1");
   await expect(cdp, "laptop info block", "document.querySelector('.device-info')?.textContent.includes('Что взять вместе с ноутбуком')");
   await cdp.eval("document.querySelectorAll('.price-row .select-service')[1].click()");
@@ -169,7 +169,8 @@ try {
   await expect(cdp, "home light theme class", "document.body.classList.contains('home-page--light')");
   await expect(cdp, "blue header", "getComputedStyle(document.querySelector('.site-header')).backgroundImage.includes('linear-gradient')");
   await expect(cdp, "white booking button", "getComputedStyle(document.querySelector('.site-header .btn-primary')).backgroundColor === 'rgb(255, 255, 255)'");
-  await expect(cdp, "animated repair stage present", "document.querySelector('.repair-stage__pulse') !== null && document.querySelectorAll('.repair-float').length === 3");
+  await expect(cdp, "animated repair stage present", "document.querySelector('.repair-stage__pulse') !== null && document.querySelectorAll('.repair-float').length === 4");
+  await expect(cdp, "repair stage links", "document.querySelector('.repair-float--phone')?.getAttribute('href') === './remont/telefony/index.html' && document.querySelector('.repair-float--laptop')?.getAttribute('href') === './remont/noutbuki/index.html' && document.querySelector('.repair-float--console')?.getAttribute('href') === './remont/pristavki/index.html' && document.querySelector('.repair-float--status')?.getAttribute('href') === '#repair-status'");
   await expect(cdp, "revival counter present", "document.querySelector('[data-revival-counter]') !== null");
   await expect(cdp, "revival counter copy", "document.querySelector('.repair-stage__counter')?.textContent.includes('Устройств отремонтировано') && document.querySelector('.repair-stage__counter')?.textContent.includes('счёт продолжает расти')");
   await expect(cdp, "hero action strip", "document.querySelectorAll('.hero-action-bar .hero__actions .btn').length === 3 && document.querySelectorAll('.hero-action-bar .hero-trust span').length === 3");
@@ -201,6 +202,7 @@ try {
   await expect(cdp, "mobile header names repaired count", "getComputedStyle(document.querySelector('.header-repair-counter > span')).display !== 'none' && document.querySelector('.header-repair-counter > span').textContent.includes('Отремонтировано')");
   await expect(cdp, "mobile contacts lead", "document.querySelector('.contact-lines--lead').getBoundingClientRect().top < document.querySelector('.contact-head__text').getBoundingClientRect().top && Number.parseFloat(getComputedStyle(document.querySelector('.contact-lines--lead a')).fontSize) >= 27");
   await expect(cdp, "light hero image remains visible", "getComputedStyle(document.querySelector('.light-hero__media img')).display !== 'none'");
+  if (screenshotDir) await captureSection(cdp, ".light-hero", "hero-mobile.png");
   await expect(cdp, "mobile onsite action full row", "document.querySelector('.hero-action-bar__onsite').getBoundingClientRect().width > document.querySelector('.hero-action-bar__primary').getBoundingClientRect().width * 1.8");
   await expect(cdp, "mobile onsite order", "document.querySelector('.onsite-media').getBoundingClientRect().top < document.querySelector('.onsite-form').getBoundingClientRect().top");
   await expect(cdp, "mobile category card composition", "[...document.querySelectorAll('.cat-card')].every((card) => { const cardBox = card.getBoundingClientRect(); const title = card.querySelector('.cat-title').getBoundingClientRect(); const icon = card.querySelector('.cat-icon').getBoundingClientRect(); const content = card.querySelector('.cat-card__content').getBoundingClientRect(); const action = card.querySelector('.cat-open').getBoundingClientRect(); return Math.abs((title.left + title.width / 2) - (cardBox.left + cardBox.width / 2)) <= 2 && icon.left < content.left && content.left >= icon.right + 10 && content.top >= title.bottom + 8 && action.left >= content.left && action.top >= Math.min(content.bottom, icon.bottom); })");
@@ -225,6 +227,7 @@ try {
 
   await setViewport(cdp, 1280, 900, false);
   await navigate(cdp, `${baseUrl}/`);
+  if (screenshotDir) await captureSection(cdp, ".light-hero", "hero-desktop.png");
   await expect(
     cdp,
     "category images fill cards",
@@ -233,7 +236,7 @@ try {
   await expect(cdp, "category titles centered with left icons", "[...document.querySelectorAll('.cat-card')].every((card) => { const cardBox = card.getBoundingClientRect(); const title = card.querySelector('.cat-title').getBoundingClientRect(); const icon = card.querySelector('.cat-icon').getBoundingClientRect(); const content = card.querySelector('.cat-card__content').getBoundingClientRect(); return Math.abs((title.left + title.width / 2) - (cardBox.left + cardBox.width / 2)) <= 2 && title.top - cardBox.top <= 24 && icon.width >= 66 && icon.left < content.left && content.left >= icon.right + 10; })");
   await expect(cdp, "specialization heading aligned with description", "Math.abs(document.querySelector('#specialization .section-title').getBoundingClientRect().left - document.querySelector('#specialization .section-text').getBoundingClientRect().left) <= 1");
   if (screenshotDir) await captureSection(cdp, ".payment-grid", "payments-desktop.png");
-  await expect(cdp, "desktop payment cards divide full screen", "getComputedStyle(document.querySelector('.payment-grid')).gridTemplateColumns.split(' ').length === 4 && document.querySelector('.payment-grid').getBoundingClientRect().width >= innerWidth - 2 && [...document.querySelectorAll('.payment-card')].every((card) => { const cardBox = card.getBoundingClientRect(); const image = card.querySelector('img').getBoundingClientRect(); const copy = card.querySelector(':scope > div').getBoundingClientRect(); return Math.abs(cardBox.width - innerWidth / 4) <= 2 && cardBox.height >= innerHeight - 90 && image.height >= cardBox.height - 1 && copy.bottom <= cardBox.bottom + 1; })");
+  await expect(cdp, "desktop payment cards divide full screen", "getComputedStyle(document.querySelector('.payment-grid')).gridTemplateColumns.split(' ').length === 4 && Number.parseFloat(getComputedStyle(document.querySelector('.payment-grid')).columnGap) >= 10 && document.querySelector('.payment-grid').getBoundingClientRect().width >= innerWidth - 2 && [...document.querySelectorAll('.payment-card')].every((card) => { const cardBox = card.getBoundingClientRect(); const image = card.querySelector('img').getBoundingClientRect(); const copy = card.querySelector(':scope > div').getBoundingClientRect(); return cardBox.width >= innerWidth * 0.22 && cardBox.width < innerWidth / 4 && cardBox.height >= innerHeight - 90 && Number.parseFloat(getComputedStyle(card).borderRadius) >= 8 && image.height >= cardBox.height - 2 && copy.bottom <= cardBox.bottom + 1; })");
   await expect(cdp, "desktop cta actions moved right", "document.querySelector('.cta-actions').getBoundingClientRect().left > document.querySelector('.cta-band').getBoundingClientRect().left + document.querySelector('.cta-band').getBoundingClientRect().width * 0.55 && [...document.querySelectorAll('.cta-actions .btn')].every((button) => button.getBoundingClientRect().height >= 50)");
   if (screenshotDir) await captureSection(cdp, ".cta-band", "cta-desktop.png");
   if (screenshotDir) await captureSection(cdp, "#specialization", "specialization-desktop.png");

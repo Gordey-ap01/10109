@@ -761,7 +761,7 @@
       let suppressClick = false;
 
       row.addEventListener("pointerdown", (event) => {
-        if (event.pointerType === "mouse" && event.button !== 0) return;
+        if (event.pointerType !== "mouse" || event.button !== 0) return;
         pointerId = event.pointerId;
         startX = event.clientX;
         startScroll = row.scrollLeft;

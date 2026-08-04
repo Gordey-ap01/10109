@@ -306,26 +306,24 @@
 @media (min-width: 1121px) {
   .payment-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+    box-sizing: border-box;
     width: 100vw;
     min-height: calc(100vh - 88px);
     min-height: calc(100svh - 88px);
     margin-left: calc(50% - 50vw);
-    gap: 0;
+    gap: 10px;
+    padding-inline: 10px;
+    background: #e6f4fb;
   }
 
   .payment-card {
     position: relative;
     min-height: calc(100vh - 88px);
     min-height: calc(100svh - 88px);
-    border: 0;
-    border-left: 1px solid rgba(255, 255, 255, 0.32);
-    border-radius: 0;
+    border: 1px solid rgba(255, 255, 255, 0.58);
+    border-radius: 8px;
     background: #0f172a;
-    box-shadow: none;
-  }
-
-  .payment-card:first-child {
-    border-left: 0;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.14);
   }
 
   .payment-card::after {
@@ -339,8 +337,8 @@
 
   .payment-card:hover {
     border-color: rgba(255, 255, 255, 0.5);
-    transform: none;
-    box-shadow: none;
+    transform: translateY(-3px);
+    box-shadow: 0 24px 54px rgba(15, 23, 42, 0.2);
   }
 
   .payment-card img {
@@ -389,6 +387,34 @@
     color: rgba(255, 255, 255, 0.82);
     font-size: 15px;
   }
+}
+
+/* The counter orbit doubles as direct navigation. */
+.repair-float {
+  padding: 12px 18px;
+  color: #0369a1;
+  font-size: 16px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.repair-float:hover {
+  border-color: rgba(14, 165, 233, 0.56);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 18px 42px rgba(3, 105, 161, 0.18);
+  filter: saturate(1.12);
+}
+
+.repair-float:focus-visible {
+  outline: 3px solid rgba(14, 165, 233, 0.34);
+  outline-offset: 4px;
+}
+
+.repair-float--status {
+  bottom: 10%;
+  left: 3%;
+  animation-delay: -5s;
 }
 
 /* Contact details lead the section; form and map share one baseline. */
@@ -1056,6 +1082,15 @@
 
   .revival-counter__number {
     font-size: clamp(46px, 14vw, 62px);
+  }
+
+  .repair-float {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .repair-float--status {
+    left: 0;
   }
 
   .hero-action-bar .hero-trust {
